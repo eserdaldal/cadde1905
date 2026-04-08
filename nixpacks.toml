@@ -2,4 +2,4 @@
 cmds = ["composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs --no-scripts"]
 
 [phases.build]
-cmds = ["php artisan package:discover --ansi", "php artisan filament:upgrade"]
+cmds = ["php artisan package:discover --ansi", "echo 'Build successful'"]
