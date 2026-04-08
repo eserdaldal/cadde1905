@@ -6,6 +6,10 @@
         "build": "vite build",
         "dev": "vite"
     },
+    "dependencies": {
+        "@tailwindcss/postcss": "^4.0.0",
+        "postcss": "^8.4.0"
+    },
     "devDependencies": {
         "@rollup/rollup-linux-x64-gnu": "^4.60.1",
         "@tailwindcss/vite": "^4.0.0",
