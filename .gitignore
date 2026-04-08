@@ -22,3 +22,20 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# temp
+/tmp
+*.tmp
+*.log
+*.bak
+*.old
+
+# backup
+/backup
+/_snapshots
+/__quarantine_cadde1905
+
+# system
+.phpunit.result.cache
+/storage/logs/*
+/storage/framework/views/*
