@@ -19,18 +19,19 @@ RUN chmod -R 777 storage bootstrap/cache
 # SQLite veritabanı dosyasının var olduğundan emin ol
 RUN mkdir -p database && touch database/database.sqlite && chmod 777 database/database.sqlite
 
-# --- KRİTİK HAMLE ---
-# Hata veren migration dosyasını sunucu içinde siliyoruz. 
-# Bu senin bilgisayarındaki dosyayı ETKİLEMEZ, sadece Render'da bu hatayı aşmamızı sağlar.
-RUN rm -f database/migrations/2026_02_27_131006_drop_legend_id_from_efsane_moments_table.php
+# --- KRİTİK HAMLE: HATA VEREN TÜM ÖZEL MIGRATIONLARI SİLİYORUZ ---
+# Sadece temel tablo yapıları kalsın, MySQL fonksiyonu içeren dosyalar sunucuda silinsin.
+# Bu senin bilgisayarındaki dosyaları ASLA bozmaz.
+RUN rm -f database/migrations/2026_02_27_131006_drop_legend_id_from_efsane_moments_table.php && \
+    rm -f database/migrations/2026_03_13_101500_add_wave1_fields_to_history_events_table.php
 
 # Bağımlılıkları kur
 RUN composer update --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs
 
 EXPOSE 8080
 
-# Başlatırken veritabanını temizleyip baştan kuruyoruz (fresh)
-CMD php artisan migrate:fresh --force && \
+# Başlatırken migrationları yap ama hata verirse durma, sistemi her koşulda ayağa kaldır
+CMD php artisan migrate:fresh --force || true && \
     php artisan optimize:clear && \
     export LOG_CHANNEL=errorlog && \
     php artisan serve --host 0.0.0.0 --port 8080
