@@ -19,13 +19,17 @@ RUN chmod -R 777 storage bootstrap/cache
 # SQLite veritabanı dosyasının var olduğundan emin ol
 RUN mkdir -p database && touch database/database.sqlite && chmod 777 database/database.sqlite
 
+# --- KRİTİK HAMLE ---
+# Hata veren migration dosyasını sunucu içinde siliyoruz. 
+# Bu senin bilgisayarındaki dosyayı ETKİLEMEZ, sadece Render'da bu hatayı aşmamızı sağlar.
+RUN rm -f database/migrations/2026_02_27_131006_drop_legend_id_from_efsane_moments_table.php
+
 # Bağımlılıkları kur
 RUN composer update --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs
 
 EXPOSE 8080
 
 # Başlatırken veritabanını temizleyip baştan kuruyoruz (fresh)
-# Bu sayede çakışan indeks hataları ortadan kalkar.
 CMD php artisan migrate:fresh --force && \
     php artisan optimize:clear && \
     export LOG_CHANNEL=errorlog && \
