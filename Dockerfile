@@ -13,15 +13,19 @@ WORKDIR /app
 # Tüm dosyaları içeri al
 COPY . .
 
-# Yetkileri ver (500 hatasını önlemek için)
+# Yetkileri ver
 RUN chmod -R 777 storage bootstrap/cache
 
-# KRİTİK ADIM: "install" yerine "update" kullanarak Filament'i zorla kuruyoruz
+# KRİTİK: SQLite veritabanı dosyasının var olduğundan emin ol
+RUN mkdir -p database && touch database/database.sqlite && chmod 777 database/database.sqlite
+
+# Bağımlılıkları kur
 RUN composer update --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs
 
 EXPOSE 8080
 
-# Başlatırken cache'leri temizle ve logları ekrana bas
-CMD php artisan optimize:clear && \
+# Başlatırken veritabanını hazırla (migrate) ve sistemi aç
+CMD php artisan migrate --force && \
+    php artisan optimize:clear && \
     export LOG_CHANNEL=errorlog && \
     php artisan serve --host 0.0.0.0 --port 8080
