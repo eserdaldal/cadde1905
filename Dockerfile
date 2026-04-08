@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    && docker-php-ext-install bcmath gd mhash pcntl pdo_mysql sockets zip
+    && docker-php-ext-install bcmath gd pcntl pdo_mysql sockets zip
 
 # Composer'ı kopyala
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -19,7 +19,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . /app
 
-# Hata detaylarını görmek için --verbose ekledik ve paket uyumluluğu için ignore komutu koyduk
+# Bağımlılıkları kur
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
 EXPOSE 8080
