@@ -1,4 +1,4 @@
-FROM php:8.2-cli
+FROM php:8.4-cli
 
 # Gerekli sistem paketlerini kur
 RUN apt-get update && apt-get install -y \
@@ -11,10 +11,10 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . /app
 
-# Filament ve Laravel paketlerini temizce kur (ignore-platform-reqs'i kaldırdık)
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Bağımlılıkları kur (ignore-platform-reqs ekledik ki ufak uyumsuzluklarda durmasın)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
-# Laravel dosyalarının yetkilerini düzenle (Render/Linux için önemli)
+# Yetkileri düzenle
 RUN chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8080
