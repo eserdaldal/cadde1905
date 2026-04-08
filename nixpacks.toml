@@ -2,7 +2,8 @@
 nixPkgs = ["php82", "php82Packages.composer"]
 
 [phases.install]
-cmds = ["composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs --no-scripts"]
+# Önce vendor klasörünü temizle, sonra platform kontrolünü pas geçerek kur
+cmds = ["rm -rf vendor", "composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs --no-scripts"]
 
 [phases.build]
 cmds = ["php artisan package:discover --ansi", "php artisan filament:upgrade", "echo 'Build Success'"]
