@@ -11,12 +11,16 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . /app
 
-# Bağımlılıkları kur (ignore-platform-reqs ekledik ki ufak uyumsuzluklarda durmasın)
+# Paketleri kur ve autoload dosyasını zorla oluştur
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
+
+# Laravel'in eski cache dosyalarını temizle
+RUN php artisan optimize:clear
 
 # Yetkileri düzenle
 RUN chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8080
 
-CMD ["php", "artisan", "serve", "--host", "0.0.0.0", "--port", "8080"]
+# Başlatırken cache'i tekrar temizleyip başlatıyoruz
+CMD php artisan optimize:clear && php artisan serve --host 0.0.0.0 --port 8080
