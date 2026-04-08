@@ -10,23 +10,19 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Sadece composer dosyalarını kopyala
-COPY composer.json composer.lock ./
-
-# --- KRİTİK DEĞİŞİKLİK ---
-# "install" yerine "update" komutunu kullanarak Lock dosyasını sunucuda zorla yeniliyoruz
-RUN composer update --no-dev --no-interaction --no-autoloader --no-scripts --ignore-platform-reqs
-
-# Şimdi uygulama kodlarını içeri al
+# Tüm dosyaları kopyala
 COPY . .
 
-# Autoload oluştur
-RUN composer dump-autoload --optimize
+# --- KRİTİK YETKİ GÜNCELLEMESİ ---
+# Sunucunun bu klasörlere dokunabilmesi şart
+RUN chmod -R 777 storage bootstrap/cache
 
-# Yetkileri ver
-RUN chmod -R 775 storage bootstrap/cache
+# Bağımlılıkları kur
+RUN composer install --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs
 
 EXPOSE 8080
 
-# Başlatırken cache temizliği
-CMD php artisan config:clear && php artisan route:clear && php artisan serve --host 0.0.0.0 --port 8080
+# Logları dosyaya değil, doğrudan ekrana (stdout) basmasını sağlayan ayar ekledik
+CMD php artisan config:clear && \
+    export LOG_CHANNEL=errorlog && \
+    php artisan serve --host 0.0.0.0 --port 8080
