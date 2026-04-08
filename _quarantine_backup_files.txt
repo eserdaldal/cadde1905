@@ -1,0 +1,99 @@
+_quarantine\pkg01_public_tests\public\test_detail.html
+_quarantine\pkg01_public_tests\public\test_detail2.html
+_quarantine\pkg01_public_tests\public\test_detail3.html
+_quarantine\pkg01_public_tests\public\test_detail4.html
+_quarantine\pkg01_public_tests\public\news-test\test-image.jpg
+_quarantine\pkg02_views_bak_kopya\resources\views\components\widgets\next-match.blade.php.bak
+_quarantine\pkg02_views_bak_kopya\resources\views\filament\components\media-viewer.blade.php.safe6a-revision.bak
+_quarantine\pkg02_views_bak_kopya\resources\views\filament\components\media-viewer.blade.php.safe6a.bak
+_quarantine\pkg02_views_bak_kopya\resources\views\filament\components\media-viewer.blade.php.safe7a.bak
+_quarantine\pkg02_views_bak_kopya\resources\views\filament\media\filtre-bar.blade.php.bak
+_quarantine\pkg02_views_bak_kopya\resources\views\layouts\app.blade.php.bak
+_quarantine\pkg02_views_bak_kopya\resources\views\pages\home.blade - Kopya.php
+_quarantine\pkg02_views_bak_kopya\resources\views\pages\home.blade.php.bak
+_quarantine\pkg02_views_bak_kopya\resources\views\pages\news\index.blade - Kopya.php
+_quarantine\pkg02_views_bak_kopya\resources\views\pages\news\show.blade - Kopya (2).php
+_quarantine\pkg02_views_bak_kopya\resources\views\pages\news\show.blade - Kopya.php
+_quarantine\pkg02_views_bak_kopya\resources\views\partials\header.blade.php.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\MediaResource.php.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe2.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe2a.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe2b.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe2c.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe3a.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe3b.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe3c.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe4a.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe4b.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe4c.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe5a.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe5b.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource.php.safe5c.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\UserResource.php.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\CreateNews.php.safe5a.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\CreateNews.php.safe5b.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\CreateNews.php.safe5c.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\CreateNews.php.safe6b.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\EditNews.php.safe4a.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\EditNews.php.safe4b.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\EditNews.php.safe4c.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\EditNews.php.safe5a.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\EditNews.php.safe5b.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\EditNews.php.safe5c.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\EditNews.php.safe6b.bak
+_quarantine\pkg03_app_bak_kopya\app\Filament\Resources\NewsResource\Pages\EditNews.php.safe7a.bak
+_quarantine\pkg03_app_bak_kopya\app\Models\HistoryEvent - Kopya.php
+_quarantine\pkg03_app_bak_kopya\app\Models\Legend - Kopya.php
+_quarantine\pkg03_app_bak_kopya\app\Models\News - Kopya.php
+_quarantine\pkg03_app_bak_kopya\app\Models\SeasonArchive - Kopya.php
+_quarantine\pkg03_app_bak_kopya\app\Models\TimelineEntry - Kopya.php
+_quarantine\pkg03_app_bak_kopya\app\Models\Trophy - Kopya.php
+_quarantine\pkg03_app_bak_kopya\app\Models\User.php.bak
+_quarantine\pkg03_app_bak_kopya\app\Policies\NewsPolicy.php.bak
+_quarantine\pkg03_app_bak_kopya\app\Providers\Filament\AdminPanelProvider.php.safe55.bak
+_quarantine\pkg04_css_bak\resources\css\app_corrupted_atomic.bak
+_quarantine\pkg04_css_bak\resources\css\app.css.bak
+_quarantine\pkg04_css_bak\resources\css\app.css.pre-highlights.bak
+_quarantine\pkg05_seeders_logs\database\seeders\ControlledSeedSeeder.php.bak
+_quarantine\pkg05_seeders_logs\database\seeders\DemoContentSeeder.php.bak
+_quarantine\pkg05_seeders_logs\database\seeders\DemoContentSeeder.php.pre-method-fix.bak
+_quarantine\pkg05_seeders_logs\storage\logs\laravel.log
+_quarantine\pkg05_seeders_logs\storage\logs\laravel.log.bak-20260316-before-media-attach-debug
+_quarantine\pkg06_archives_backups\backup_before_demo_seed.sql
+_quarantine\pkg06_archives_backups\.final-storage-volume-backup\cadde1905_storage_volume_backup.tar.gz
+_quarantine\pkg06_archives_backups\storage\dev-backups\20260309-200723-sports-snapshot-prep\ApiFootballClient.php
+_quarantine\pkg06_archives_backups\storage\dev-backups\20260309-200723-sports-snapshot-prep\ApiFootballService.php
+_quarantine\pkg06_archives_backups\storage\dev-backups\20260309-200723-sports-snapshot-prep\match.blade.php
+_quarantine\pkg06_archives_backups\storage\dev-backups\20260309-200723-sports-snapshot-prep\MatchPageService.php
+_quarantine\pkg06_archives_backups\storage\dev-backups\20260309-200723-sports-snapshot-prep\services.php
+_quarantine\pkg06_archives_backups\storage\dev-backups\20260309-200723-sports-snapshot-prep\web.php
+_quarantine\pkg06_archives_backups\_backup_v6_4\app\Filament\Resources\HomepageHeroOverrideResource.php
+_quarantine\pkg07_root_zero_byte\2026-03-22 033510
+_quarantine\pkg07_root_zero_byte\2026-03-22 073510
+_quarantine\pkg07_root_zero_byte\2026-03-22 093510
+_quarantine\pkg07_root_zero_byte\2026-03-22 113510
+_quarantine\pkg07_root_zero_byte\2026-03-22 133510
+_quarantine\pkg07_root_zero_byte\2026-03-22 153510
+_quarantine\pkg07_root_zero_byte\2026-03-22 173510
+_quarantine\pkg08_root_php\check_types.php
+_backup\historicalmatch-media-20260330_020310\CreateHistoricalMatch.php
+_backup\historicalmatch-media-20260330_020310\EditHistoricalMatch.php
+_backup\historicalmatch-media-20260330_020310\HistoricalMatch.php
+_backup\historicalmatch-media-20260330_020310\HistoricalMatchResource.php
+_backup\legend-media-20260330_133117\CreateLegend.php
+_backup\legend-media-20260330_133117\EditLegend.php
+_backup\legend-media-20260330_133117\Legend.php
+_backup\legend-media-20260330_133117\LegendResource.php
+_backup\legend-media-20260330_133159\CreateLegend.php
+_backup\legend-media-20260330_133159\EditLegend.php
+_backup\legend-media-20260330_133159\Legend.php
+_backup\legend-media-20260330_133159\LegendResource.php
+_backup\seasonarchive-media-20260330_131246\CreateSeasonArchive.php
+_backup\seasonarchive-media-20260330_131246\EditSeasonArchive.php
+_backup\seasonarchive-media-20260330_131246\SeasonArchive.php
+_backup\seasonarchive-media-20260330_131246\SeasonArchiveResource.php
+_backup\trophy-media-20260330_134931\CreateTrophy.php
+_backup\trophy-media-20260330_134931\EditTrophy.php
+_backup\trophy-media-20260330_134931\Trophy.php
+_backup\trophy-media-20260330_134931\TrophyResource.php

@@ -1,3 +1,24 @@
+--------------------------------
+# ⚠️ LEGACY AGENT FILE (FROZEN)
+
+This file is part of the pre-SSOT agent system.
+
+CURRENT STATE:
+- NOT authoritative
+- NOT a source of truth
+- MUST NOT define routes, DB, theme, or system behavior
+
+SOURCE OF TRUTH:
+C:\laragon\www\Docs\PROJECT_LOG\SSOT_INDEX.md
+
+INSTRUCTION:
+- Do NOT rely on this file for system decisions
+- Use SSOT modules instead
+
+STATUS:
+FROZEN / LEGACY
+
+--------------------------------
 # Yeni Görev Başlatma Workflow'u
 
 **Tetikleyici:** `/yeni-gorev`
@@ -15,3 +36,4 @@
 6. Görevi Eser'e özetle: ne yapacaksın, kaç adım, tahmini süre
 7. Eser onay verirse başla
 8. Onay gelmezse bekle, değişiklik varsa not al
+

@@ -1,3 +1,24 @@
+--------------------------------
+# ⚠️ LEGACY AGENT FILE (FROZEN)
+
+This file is part of the pre-SSOT agent system.
+
+CURRENT STATE:
+- NOT authoritative
+- NOT a source of truth
+- MUST NOT define routes, DB, theme, or system behavior
+
+SOURCE OF TRUTH:
+C:\laragon\www\Docs\PROJECT_LOG\SSOT_INDEX.md
+
+INSTRUCTION:
+- Do NOT rely on this file for system decisions
+- Use SSOT modules instead
+
+STATUS:
+FROZEN / LEGACY
+
+--------------------------------
 # CADDE1905 — Frontend Kuralları (Blade + Tailwind)
 
 **Aktivasyon:** Always On
@@ -72,3 +93,4 @@
 - Bootstrap ekleme
 - Tailwind config.js dosyası oluşturma
 - jQuery ekleme
+

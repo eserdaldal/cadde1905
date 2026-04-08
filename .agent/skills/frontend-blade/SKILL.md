@@ -1,3 +1,24 @@
+--------------------------------
+# ⚠️ LEGACY AGENT FILE (FROZEN)
+
+This file is part of the pre-SSOT agent system.
+
+CURRENT STATE:
+- NOT authoritative
+- NOT a source of truth
+- MUST NOT define routes, DB, theme, or system behavior
+
+SOURCE OF TRUTH:
+C:\laragon\www\Docs\PROJECT_LOG\SSOT_INDEX.md
+
+INSTRUCTION:
+- Do NOT rely on this file for system decisions
+- Use SSOT modules instead
+
+STATUS:
+FROZEN / LEGACY
+
+--------------------------------
 ---
 name: frontend-blade
 description: Blade template, Tailwind CSS v4, Alpine.js ve BladewindUI ile CADDE1905 frontend geliştirme protokolü. Yeni sayfa layout'u, Blade bileşeni, dark/light mode toggle, renk sistemi, tipografi veya responsive yapı oluştururken bu skill'i kullan.
@@ -151,3 +172,4 @@ php artisan make:component CardNews
 | `Docs\REFERENCE\06_Gorsel_Varlik_Kurallari.md` | Görsel boyutları, logo konumları, watermark |
 | `Docs\REFERENCE\09_Kultur_Jargon_Referansi.md` | Türkçe UI terimleri, etiket isimleri |
 | `Docs\REFERENCE\12_Felsefi_Detaylar.md` | Kullanıcı deneyimi tonu, taraftar kimliği |
+

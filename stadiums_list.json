@@ -1,0 +1,82 @@
+[
+    {
+        "id": 41,
+        "name_api": "Arrowhead Stadium",
+        "name_override": null
+    },
+    {
+        "id": 42,
+        "name_api": "AT&T Stadium",
+        "name_override": null
+    },
+    {
+        "id": 34,
+        "name_api": "BC Place",
+        "name_override": null
+    },
+    {
+        "id": 30,
+        "name_api": "BMO Field",
+        "name_override": null
+    },
+    {
+        "id": 29,
+        "name_api": "Estadio Akron",
+        "name_override": null
+    },
+    {
+        "id": 28,
+        "name_api": "Estadio Azteca",
+        "name_override": null
+    },
+    {
+        "id": 37,
+        "name_api": "Estadio BBVA",
+        "name_override": null
+    },
+    {
+        "id": 33,
+        "name_api": "Gillette Stadium",
+        "name_override": null
+    },
+    {
+        "id": 40,
+        "name_api": "Hard Rock Stadium",
+        "name_override": null
+    },
+    {
+        "id": 43,
+        "name_api": "Levi's Stadium",
+        "name_override": null
+    },
+    {
+        "id": 36,
+        "name_api": "Lincoln Financial Field",
+        "name_override": null
+    },
+    {
+        "id": 39,
+        "name_api": "Lumen Field",
+        "name_override": null
+    },
+    {
+        "id": 38,
+        "name_api": "Mercedes-Benz Stadium",
+        "name_override": null
+    },
+    {
+        "id": 32,
+        "name_api": "MetLife Stadium",
+        "name_override": null
+    },
+    {
+        "id": 35,
+        "name_api": "NRG Stadium",
+        "name_override": null
+    },
+    {
+        "id": 31,
+        "name_api": "SoFi Stadium",
+        "name_override": null
+    }
+]

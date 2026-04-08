@@ -1,0 +1,108 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\News;
+use App\Models\User;
+
+class NewsPolicy
+{
+    /**
+     * Admin/SuperAdmin her şeyi yapabilsin.
+     */
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->role === 'admin' || $user->isSuperAdmin()) {
+            return true;
+        }
+
+        return null;
+    }
+
+    /**
+     * Editor listeyi görebilir.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->role === 'editor';
+    }
+
+    /**
+     * Editor tekil kaydı görebilir.
+     */
+    public function view(User $user, News $news): bool
+    {
+        return $user->role === 'editor';
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->role === 'editor';
+    }
+
+    public function update(User $user, News $news): bool
+    {
+        if ($user->role !== 'editor') {
+            return false;
+        }
+
+        // Ownership rule: Editor sadece kendi oluşturduğu haberi güncelleyebilir.
+        $isAuthor = (int) $news->author_user_id === (int) $user->id;
+
+        // A Model Rule: Sadece draft durumunda düzenleme yapılabilir.
+        return $isAuthor && $news->status === News::STATUS_DRAFT;
+    }
+
+    /**
+     * Editor sadece KENDİ DRAFT'ını silebilir.
+     */
+    public function delete(User $user, News $news): bool
+    {
+        return $user->role === 'editor' && 
+               (int) $news->author_user_id === (int) $user->id &&
+               $news->isDraft();
+    }
+
+    /**
+     * Bulk delete için (Filament bulk aksiyonları bunu kullanabilir).
+     */
+    public function deleteAny(User $user): bool
+    {
+        return false;
+    }
+
+    /**
+     * Soft delete geri alma: Editor YAPAMAZ.
+     */
+    public function restore(User $user, News $news): bool
+    {
+        return false;
+    }
+
+    public function restoreAny(User $user): bool
+    {
+        return false;
+    }
+
+    /**
+     * Kalıcı silme: Editor YAPAMAZ.
+     */
+    public function forceDelete(User $user, News $news): bool
+    {
+        return false;
+    }
+
+    public function forceDeleteAny(User $user): bool
+    {
+        return false;
+    }
+
+    /**
+     * Opsiyonel: Filament bazen replicate vb. gösterebilir.
+     * Editor’e kapalı kalsın.
+     */
+    public function replicate(User $user, News $news): bool
+    {
+        return false;
+    }
+}

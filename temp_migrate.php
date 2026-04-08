@@ -1,0 +1,1 @@
+<?php define('LARAVEL_START', microtime(true)); require 'vendor/autoload.php'; $app = require_once 'bootstrap/app.php'; $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class); $status = $kernel->call('migrate', ['--force' => true]); echo 'MIGRATE_STATUS:' . $status;

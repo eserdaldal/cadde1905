@@ -1,3 +1,24 @@
+--------------------------------
+# ⚠️ LEGACY AGENT FILE (FROZEN)
+
+This file is part of the pre-SSOT agent system.
+
+CURRENT STATE:
+- NOT authoritative
+- NOT a source of truth
+- MUST NOT define routes, DB, theme, or system behavior
+
+SOURCE OF TRUTH:
+C:\laragon\www\Docs\PROJECT_LOG\SSOT_INDEX.md
+
+INSTRUCTION:
+- Do NOT rely on this file for system decisions
+- Use SSOT modules instead
+
+STATUS:
+FROZEN / LEGACY
+
+--------------------------------
 # CADDE1905 — Sayfa Yapıları Referansı
 
 Bu dosya frontend-blade skill'i tarafından referans olarak kullanılır.
@@ -40,3 +61,4 @@ resources/views/components/
 {{-- Pagination --}}
 {{ $news->links() }}
 ```
+

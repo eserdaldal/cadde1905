@@ -1,3 +1,24 @@
+--------------------------------
+# ⚠️ LEGACY AGENT FILE (FROZEN)
+
+This file is part of the pre-SSOT agent system.
+
+CURRENT STATE:
+- NOT authoritative
+- NOT a source of truth
+- MUST NOT define routes, DB, theme, or system behavior
+
+SOURCE OF TRUTH:
+C:\laragon\www\Docs\PROJECT_LOG\SSOT_INDEX.md
+
+INSTRUCTION:
+- Do NOT rely on this file for system decisions
+- Use SSOT modules instead
+
+STATUS:
+FROZEN / LEGACY
+
+--------------------------------
 ---
 name: error-handler
 description: Hata, exception veya beklenmedik davranışla karşılaşıldığında devreye gir. "Hata var", "çalışmıyor", "exception", "500 hatası", "migration failed", "siyah ekran", "route bulunamadı" gibi durumlarda bu skill'i kullan. 5 adımlı protokolü uygula.
@@ -144,3 +165,4 @@ chmod -R 775 storage/ bootstrap/cache/
 |-------|---------|
 | `Docs\REFERENCE\02_Hosting_ve_Altyapi.md` | Sunucu ortamı, PHP versiyonu, path bilgileri |
 | `Docs\REFERENCE\09_Kultur_Jargon_Referansi.md` | Doğru tablo/model adı teyidi için |
+

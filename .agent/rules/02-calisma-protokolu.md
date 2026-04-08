@@ -1,3 +1,24 @@
+--------------------------------
+# ⚠️ LEGACY AGENT FILE (FROZEN)
+
+This file is part of the pre-SSOT agent system.
+
+CURRENT STATE:
+- NOT authoritative
+- NOT a source of truth
+- MUST NOT define routes, DB, theme, or system behavior
+
+SOURCE OF TRUTH:
+C:\laragon\www\Docs\PROJECT_LOG\SSOT_INDEX.md
+
+INSTRUCTION:
+- Do NOT rely on this file for system decisions
+- Use SSOT modules instead
+
+STATUS:
+FROZEN / LEGACY
+
+--------------------------------
 # CADDE1905 — Çalışma Protokolü
 
 **Aktivasyon:** Always On — Her prompt'ta aktif
@@ -98,3 +119,4 @@ Her yeni Antigravity oturumu başladığında veya yeni görev alındığında �
 - Türkçe iletişim kur
 - Varsayım yapma — belirsiz durumda sor
 - Hata çıktığında: önce analiz et, sonra çöz
+

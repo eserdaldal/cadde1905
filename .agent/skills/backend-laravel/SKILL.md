@@ -1,3 +1,24 @@
+--------------------------------
+# ⚠️ LEGACY AGENT FILE (FROZEN)
+
+This file is part of the pre-SSOT agent system.
+
+CURRENT STATE:
+- NOT authoritative
+- NOT a source of truth
+- MUST NOT define routes, DB, theme, or system behavior
+
+SOURCE OF TRUTH:
+C:\laragon\www\Docs\PROJECT_LOG\SSOT_INDEX.md
+
+INSTRUCTION:
+- Do NOT rely on this file for system decisions
+- Use SSOT modules instead
+
+STATUS:
+FROZEN / LEGACY
+
+--------------------------------
 ---
 name: backend-laravel
 description: Laravel 12 backend geliştirme için detaylı protokol. Migration oluşturma, Eloquent model tanımlama, Resource Controller yazma, Service sınıfı oluşturma, Route tanımlama ve FilamentPHP resource ekleme işlemlerinde bu skill'i kullan.
@@ -138,3 +159,4 @@ php artisan test             # Test suite
 | `Docs\REFERENCE\03_Uygulama_Fazlari.md` | Hangi model/özellik hangi fazda, sıralama |
 | `Docs\REFERENCE\08_Icerik_Konsept_Rehberi.md` | İçerik türleri, kategori yapısı, haber modeli |
 | `Docs\REFERENCE\13_Rol_ve_Is_Bolumu.md` | FilamentPHP ile hangi işlemlerin yapılacağı |
+

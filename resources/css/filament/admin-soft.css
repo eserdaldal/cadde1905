@@ -1,0 +1,49 @@
+/* Minimal ve güvenli yumuşatma
+   Layout yapısına dokunmaz.
+   Sadece bazı yüzeyleri yumuşatır.
+*/
+
+:root {
+    --cadde-soft-panel: #0b1220;
+    --cadde-soft-surface: #111827;
+    --cadde-soft-border: #253046;
+}
+
+/* Ana içerik yüzeyi */
+.fi-body,
+.fi-layout,
+.fi-main {
+    background-color: var(--cadde-soft-panel);
+}
+
+/* Sadece yaygın kart benzeri yüzeyler */
+.fi-section-content,
+.fi-card,
+.fi-in-entry,
+.fi-ta-ctn,
+.fi-wi-widget {
+    background-color: var(--cadde-soft-surface);
+    border-color: var(--cadde-soft-border);
+}
+
+/* Tablo kapsayıcısı */
+.fi-ta-ctn {
+    border-radius: 0.75rem;
+}
+
+/* Widget ve section ayrımı biraz artsın */
+.fi-wi-widget,
+.fi-section {
+    box-shadow: 0 1px 0 rgba(255,255,255,0.02);
+}
+
+/* Inputlara çok az yumuşatma */
+.fi-input-wrp {
+    border-color: #2b364d;
+}
+
+/* Hoverları çok hafif belirginleştir */
+.fi-ta-row:hover,
+.fi-sidebar-item-button:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}

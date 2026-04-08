@@ -1,0 +1,253 @@
+@php
+    $theme = 'event-light';
+@endphp
+@extends('layouts.worldcup')
+
+@php
+    $activeTournament = $activeTournament ?? null;
+    $pageYear = $activeTournament?->year;
+    $pageTitle = $activeTournament?->name ?? 'Dünya Kupası';
+
+    $cleanPageTitle = $pageTitle;
+    if ($pageYear && str_contains($pageTitle, (string)$pageYear)) {
+        $cleanPageTitle = trim(str_replace((string)$pageYear, '', $pageTitle));
+    }
+
+    $pageTitleWithYear = $pageYear ? ($cleanPageTitle . ' ' . $pageYear) : $cleanPageTitle;
+@endphp
+
+@section('title', 'Maçlar — ' . $pageTitleWithYear . ' — CADDE1905')
+
+@section('worldcup-content')
+
+    @php
+        $filters = $filters ?? [];
+        $roundMap = [
+            'Group Stage' => 'Grup Aşaması',
+            'Round of 32' => 'Son 32',
+            'Round of 16' => 'Son 16',
+            'Quarter-finals' => 'Çeyrek Final',
+            'Quarterfinals' => 'Çeyrek Final',
+            'Semi-finals' => 'Yarı Final',
+            'Semi-final' => 'Yarı Final',
+            'Final' => 'Final',
+            'Third Place Playoff' => 'Üçüncülük Maçı',
+        ];
+
+        $normalizeRound = function ($raw) use ($roundMap) {
+            $raw = trim((string) $raw);
+            if ($raw === '') {
+                return 'Grup Aşaması';
+            }
+            foreach ($roundMap as $en => $tr) {
+                if (stripos($raw, $en) !== false) {
+                    $raw = str_ireplace($en, $tr, $raw);
+                }
+            }
+            return $raw;
+        };
+
+        $rounds = $filters['rounds'] ?? ['Tümü', 'Grup Aşaması', 'Son 32', 'Son 16', 'Çeyrek Final', 'Yarı Final', 'Final'];
+        $rounds = collect($rounds)
+            ->map(fn ($round) => $round === 'Tümü' ? 'Tümü' : $normalizeRound($round))
+            ->unique()
+            ->values()
+            ->all();
+
+        $matches = $matches ?? [];
+        $featuredMatches = $featuredMatches ?? [];
+        $matchesForGrid = count($matches) > 0 ? $matches : $featuredMatches;
+
+        $groupedMatches = collect($matchesForGrid)->groupBy(function ($match) {
+            return $match->date_key ?? 'upcoming';
+        });
+
+        $dateNavigator = collect($matchesForGrid)
+            ->filter(fn ($match) => !empty($match->date_key))
+            ->unique('date_key')
+            ->sortBy('date_key')
+            ->values()
+            ->map(function($item) {
+                $eng = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                $tr  = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+
+                if ($item->date) {
+                    $mName = $item->date->format('M');
+                    $item->display_month = str_ireplace($eng, $tr, $mName);
+                    $item->display_day = $item->date->format('d');
+                }
+                return $item;
+            });
+
+        $dateRounds = [];
+        foreach ($matchesForGrid as $match) {
+            $dateKey = $match->date_key ?? null;
+            if (! $dateKey) {
+                continue;
+            }
+            $roundLabel = $normalizeRound($match->round ?? 'Grup Aşaması');
+            $dateRounds[$dateKey][] = $roundLabel;
+        }
+
+        foreach ($dateRounds as $dateKey => $rounds) {
+            $dateRounds[$dateKey] = collect($rounds)->filter()->unique()->values()->all();
+        }
+
+        $dateCounts = [];
+        foreach ($matchesForGrid as $match) {
+            $dateKey = $match->date_key ?? null;
+            if (! $dateKey) {
+                continue;
+            }
+            $roundLabel = $normalizeRound($match->round ?? 'Grup Aşaması');
+            $dateCounts[$dateKey]['Tümü'] = ($dateCounts[$dateKey]['Tümü'] ?? 0) + 1;
+            $dateCounts[$dateKey][$roundLabel] = ($dateCounts[$dateKey][$roundLabel] ?? 0) + 1;
+        }
+    @endphp
+
+    <div class="wc-container" x-data='{
+        activeRound: "Tümü",
+        activeDate: "",
+        visibleCount: 0,
+        dateRounds: @json($dateRounds),
+        dateCounts: @json($dateCounts),
+        updateVisible() {
+            this.$nextTick(() => {
+                const cards = this.$el.querySelectorAll(".match-card-wrapper");
+                let count = 0;
+                cards.forEach(card => {
+                    if (getComputedStyle(card).display !== "none") {
+                        count++;
+                    }
+                });
+                this.visibleCount = count;
+            });
+        },
+        dateHasMatches(dateKey) {
+            const dateData = this.dateCounts?.[dateKey];
+            if (!dateData) {
+                return false;
+            }
+            if (this.activeRound === "Tümü") {
+                return (dateData["Tümü"] ?? 0) > 0;
+            }
+            return (dateData[this.activeRound] ?? 0) > 0;
+        }
+    }' x-init="updateVisible()" x-effect="activeRound; activeDate; updateVisible()">
+        <section class="wc-section wc-section--compact wc-section--compact-top">
+
+            <header class="wc-page-header">
+                <h1 class="wc-page-title">Maç Takvimi</h1>
+                <p class="wc-page-subtitle">{{ $pageTitleWithYear }} finallerinin tüm maç programı ve skorları.</p>
+                <div class="wc-page-divider"></div>
+            </header>
+
+            <div class="mt-8 mb-12 space-y-6 p-4 sm:p-5 rounded-3xl bg-[var(--surface-widget)] border border-[var(--border-soft)]">
+                <div class="wc-filter-bar">
+                    @foreach ($rounds as $round)
+                        <button @click="activeRound = '{{ $round }}'; activeDate = ''"
+                                class="wc-chip"
+                                :class="activeRound === '{{ $round }}' ? 'active' : ''">
+                            {{ $round }}
+                        </button>
+                    @endforeach
+                </div>
+
+                <div class="flex items-center gap-4 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
+                    <button @click="activeDate = ''; activeRound = 'Tümü'"
+                            class="wc-date-chip"
+                            :class="activeDate === '' && activeRound === 'Tümü' ? 'active' : ''">
+                        <span class="wc-date-chip__month">Tümü</span>
+                        <span class="wc-date-chip__day">∞</span>
+                    </button>
+
+                    @if ($dateNavigator->isEmpty())
+                        <div class="flex-1 py-10 bg-[var(--surface-base)] border border-dashed border-[var(--border-soft)] rounded-2xl text-center text-[10px] font-black uppercase tracking-widest opacity-40">
+                            Takvim verisi bekleniyor
+                        </div>
+                    @else
+                        @foreach ($dateNavigator as $date)
+                            <button @click="activeDate = '{{ $date->date_key }}'; activeRound = 'Tümü'"
+                                    class="wc-date-chip"
+                                    x-show="dateHasMatches('{{ $date->date_key }}')"
+                                    :class="activeDate === '{{ $date->date_key }}' ? 'active' : ''">
+                                <span class="wc-date-chip__month">{{ $date->display_month ?? '—' }}</span>
+                                <span class="wc-date-chip__day">{{ $date->display_day ?? '—' }}</span>
+                            </button>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+
+            @if ($groupedMatches->isEmpty())
+                <div class="py-20">
+                    @include('worldcup.partials.wc-empty-state', [
+                        'title' => 'Maç takvimi henüz açıklanmadı',
+                        'description' => 'Turnuva fikstürü kesinleştiğinde tüm detaylar burada yer alacaktır.'
+                    ])
+                </div>
+            @else
+                @foreach ($groupedMatches as $dateKey => $items)
+                    @php
+                        $dateHeading = $items->first()?->date_heading;
+                        $engDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+                        $trDays  = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+                        $engMonths = [
+                            'January','February','March','April','May','June','July','August','September','October','November','December',
+                            'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+                        ];
+                        $trMonths  = [
+                            'Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık',
+                            'Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'
+                        ];
+                        $cleanHeading = str_ireplace($engDays, $trDays, $dateHeading);
+                        $cleanHeading = str_ireplace($engMonths, $trMonths, $cleanHeading);
+
+                        $groupRounds = collect($items)->map(function ($match) use ($normalizeRound) {
+                            $raw = $match->round ?? 'Grup Aşaması';
+                            return $normalizeRound($raw);
+                        })->filter()->unique()->values();
+                    @endphp
+                    <div class="wc-match-group wc-match-group--tight"
+                         x-show="dateHasMatches('{{ $dateKey }}') && (activeDate === '' || activeDate === '{{ $dateKey }}')"
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 translateY(20px)"
+                         x-transition:enter-end="opacity-100 translateY(0)">
+
+                        <div class="wc-match-group__header">
+                            <h3 class="wc-match-group__title text-[var(--text-primary)]">
+                                {{ $dateKey === 'upcoming' ? 'Yaklaşan Maçlar' : ($cleanHeading ?: 'Tarih Bilgisi') }}
+                            </h3>
+                            <span class="wc-match-group__count">
+                                {{ count($items) }} Maç
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 min-h-[100px]">
+                            @foreach ($items as $match)
+                                @php
+                                    $roundLabel = $normalizeRound($match->round ?? 'Grup Aşaması');
+                                @endphp
+                                <div class="match-card-wrapper"
+                                     data-date-key="{{ $match->date_key }}"
+                                     data-round="{{ $roundLabel }}"
+                                     x-show="(activeRound === 'Tümü' || activeRound === '{{ $roundLabel }}') && (activeDate === '' || activeDate === '{{ $match->date_key }}')">
+                                    @include('worldcup.partials.match-card', ['match' => $match])
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+
+                <div x-show="visibleCount === 0" class="mt-12">
+                    @include('worldcup.partials.wc-empty-state', [
+                        'title' => 'Sonuç bulunamadı',
+                        'description' => 'Seçtiğiniz kriterlere uygun planlanmış bir maç bulunmamaktadır.'
+                    ])
+                </div>
+            @endif
+
+        </section>
+    </div>
+
+@endsection

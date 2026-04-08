@@ -1,3 +1,24 @@
+--------------------------------
+# ⚠️ LEGACY AGENT FILE (FROZEN)
+
+This file is part of the pre-SSOT agent system.
+
+CURRENT STATE:
+- NOT authoritative
+- NOT a source of truth
+- MUST NOT define routes, DB, theme, or system behavior
+
+SOURCE OF TRUTH:
+C:\laragon\www\Docs\PROJECT_LOG\SSOT_INDEX.md
+
+INSTRUCTION:
+- Do NOT rely on this file for system decisions
+- Use SSOT modules instead
+
+STATUS:
+FROZEN / LEGACY
+
+--------------------------------
 ---
 name: report-writer
 description: Tamamlanan görev, çözülen hata veya yapılan değişiklik sonrası rapor dosyası oluştur. "Rapor yaz", "kaydet", "özet çıkar" denildiğinde veya bir görev tamamlandığında otomatik devreye gir.
@@ -96,3 +117,4 @@ Raporu yazdıktan sonra `KODLAMA_GOREVLERI.md` güncelle:
 |-------|---------|
 | `Docs\REFERENCE\10_Is_Akisi_Protokolu.md` | Raporlama protokolü, iş akışı standartları |
 | `Docs\REFERENCE\13_Rol_ve_Is_Bolumu.md` | Kimin hangi belgeyi güncellediği |
+

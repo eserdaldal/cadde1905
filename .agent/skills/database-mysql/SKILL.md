@@ -1,3 +1,24 @@
+--------------------------------
+# ⚠️ LEGACY AGENT FILE (FROZEN)
+
+This file is part of the pre-SSOT agent system.
+
+CURRENT STATE:
+- NOT authoritative
+- NOT a source of truth
+- MUST NOT define routes, DB, theme, or system behavior
+
+SOURCE OF TRUTH:
+C:\laragon\www\Docs\PROJECT_LOG\SSOT_INDEX.md
+
+INSTRUCTION:
+- Do NOT rely on this file for system decisions
+- Use SSOT modules instead
+
+STATUS:
+FROZEN / LEGACY
+
+--------------------------------
 ---
 name: database-mysql
 description: MySQL veritabanı şema tasarımı ve yönetimi. Yeni tablo migration'ı yazma, mevcut tabloya kolon ekleme, index oluşturma, Eloquent ilişki tanımlama, sorgu optimizasyonu ve yedekleme işlemlerinde bu skill'i kullan.
@@ -148,3 +169,4 @@ php artisan tinker
 | `Docs\REFERENCE\03_Uygulama_Fazlari.md` | Hangi tablo hangi fazda oluşturulacak |
 | `Docs\REFERENCE\08_Icerik_Konsept_Rehberi.md` | İçerik veri modeli, kategori yapısı |
 | `Docs\REFERENCE\02_Hosting_ve_Altyapi.md` | MySQL versiyon bilgisi, production kısıtlamaları |
+

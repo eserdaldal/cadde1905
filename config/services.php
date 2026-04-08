@@ -35,4 +35,22 @@ return [
         ],
     ],
 
+    'api_football' => [
+        'base_url' => env('API_FOOTBALL_BASE_URL', 'https://v3.football.api-sports.io'),
+        'key' => env('API_FOOTBALL_KEY'),
+        'team_id' => (int) env('API_FOOTBALL_TEAM_ID', 645),
+        'league_id' => (int) env('API_FOOTBALL_LEAGUE_ID', 0),
+        'season' => (int) env('API_FOOTBALL_SEASON', 0),
+        'timeout' => (int) env('API_FOOTBALL_TIMEOUT', 10),
+    ],
+
+    'api_football_wc' => [
+        'base_url' => env('API_FOOTBALL_WC_BASE_URL', env('API_FOOTBALL_BASE_URL', 'https://v3.football.api-sports.io')),
+        'key' => env('API_FOOTBALL_WC_KEY', env('API_FOOTBALL_KEY')),
+        'team_id' => (int) env('API_FOOTBALL_WC_TEAM_ID', 645),
+        'league_id' => (int) env('API_FOOTBALL_WC_LEAGUE_ID', 0),
+        'season' => (int) env('API_FOOTBALL_WC_SEASON', 0),
+        'timeout' => (int) env('API_FOOTBALL_WC_TIMEOUT', env('API_FOOTBALL_TIMEOUT', 10)),
+    ],
+
 ];

@@ -1,0 +1,162 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+
+class News extends Model
+{
+    use SoftDeletes;
+
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_IN_REVIEW = 'in_review';
+    public const STATUS_PUBLISHED = 'published';
+
+    protected $fillable = [
+        'category_id',
+        'author_user_id',
+        'branch',
+        'title',
+        'slug',
+        'summary',
+        'content',
+        'cover_image_path',
+        'source_url',
+        'status',
+        'published_at',
+        'is_ai_generated',
+    ];
+
+    protected $casts = [
+        'published_at' => 'datetime',
+        'is_ai_generated' => 'boolean',
+    ];
+
+    public function isDraft(): bool
+    {
+        return $this->status === self::STATUS_DRAFT;
+    }
+
+    public function isInReview(): bool
+    {
+        return $this->status === self::STATUS_IN_REVIEW;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === self::STATUS_PUBLISHED;
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'author_user_id');
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'news_tag');
+    }
+
+    public function media(): MorphToMany
+    {
+        return $this->morphToMany(
+            Media::class,
+            'mediable',
+            'mediaables'
+        )->withPivot([
+            'usage_type',
+            'sort_order',
+            'is_primary',
+            'title_override',
+            'caption',
+            'credit',
+            'notes',
+        ])->withTimestamps();
+    }
+
+    public function coverMedia(): MorphToMany
+    {
+        return $this->media()->wherePivot('usage_type', 'cover');
+    }
+
+    public function galleryMedia(): MorphToMany
+    {
+        return $this->media()->wherePivot('usage_type', 'gallery');
+    }
+
+    public function videoMedia(): MorphToMany
+    {
+        return $this->media()->wherePivot('usage_type', 'video');
+    }
+
+    public function primaryCover()
+    {
+        return $this->media()
+            ->wherePivot('usage_type', 'cover')
+            ->wherePivot('is_primary', true)
+            ->orderByDesc('mediaables.id');
+    }
+
+    public function getListExcerptAttribute(): string
+    {
+        $text = trim((string) ($this->summary ?: strip_tags((string) $this->content)));
+
+        if ($text === '') {
+            return '';
+        }
+
+        return mb_strimwidth($text, 0, 180, '...');
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (News $news) {
+            // 1. Automatize published_at
+            if ($news->status === self::STATUS_PUBLISHED && empty($news->published_at)) {
+                $news->published_at = now();
+            }
+
+            if ($news->status !== self::STATUS_PUBLISHED) {
+                $news->published_at = null;
+            }
+
+            // 2. Transition Guards (Security Hardening)
+            // Sadece auth olan kullanıcılar için kontrol et
+            if (auth()->check()) {
+                $user = auth()->user();
+                $originalStatus = $news->getOriginal('status');
+
+                // Eğer statü değişiyorsa kontrol et
+                if ($news->isDirty('status')) {
+                    // Editor Kısıtları
+                    if ($user->isEditor()) {
+                        // Editor asla Published yapamaz
+                        if ($news->status === self::STATUS_PUBLISHED) {
+                            abort(403, 'Editor haber yayınlayamaz.');
+                        }
+                        
+                        // Editor sadece Draft'tan In Review'a geçiş yapabilir
+                        if ($originalStatus !== self::STATUS_DRAFT && $news->status !== $originalStatus) {
+                            abort(403, 'Editor bu statü değişikliğini yapamaz.');
+                        }
+                    }
+
+                    // Admin Kısıtları
+                    if ($user->isAdmin() && !$user->isSuperAdmin()) {
+                        // Admin her şeyi yapabilir ama biz yine de tutarlı tutalım
+                        // Şu an için admin kısıtı gerekmiyor ama yapı hazır.
+                    }
+                }
+            }
+        });
+    }
+}
