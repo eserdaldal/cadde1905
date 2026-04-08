@@ -16,7 +16,7 @@ COPY . .
 # Yetkileri ver
 RUN chmod -R 777 storage bootstrap/cache
 
-# KRİTİK: SQLite veritabanı dosyasının var olduğundan emin ol
+# SQLite veritabanı dosyasının var olduğundan emin ol
 RUN mkdir -p database && touch database/database.sqlite && chmod 777 database/database.sqlite
 
 # Bağımlılıkları kur
@@ -24,8 +24,9 @@ RUN composer update --no-dev --no-interaction --optimize-autoloader --ignore-pla
 
 EXPOSE 8080
 
-# Başlatırken veritabanını hazırla (migrate) ve sistemi aç
-CMD php artisan migrate --force && \
+# Başlatırken veritabanını temizleyip baştan kuruyoruz (fresh)
+# Bu sayede çakışan indeks hataları ortadan kalkar.
+CMD php artisan migrate:fresh --force && \
     php artisan optimize:clear && \
     export LOG_CHANNEL=errorlog && \
     php artisan serve --host 0.0.0.0 --port 8080
