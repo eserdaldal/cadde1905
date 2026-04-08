@@ -10,17 +10,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# --- STRATEJİK ADIM ---
-# ÖNCE sadece composer dosyalarını kopyalıyoruz (Uygulama kodlarını DEĞİL)
+# Sadece composer dosyalarını kopyala
 COPY composer.json composer.lock ./
 
-# Bağımlılıkları kur (Sınıfları aramadan sadece indirir)
-RUN composer install --no-dev --no-interaction --no-autoloader --no-scripts
+# --- KRİTİK DEĞİŞİKLİK ---
+# "install" yerine "update" komutunu kullanarak Lock dosyasını sunucuda zorla yeniliyoruz
+RUN composer update --no-dev --no-interaction --no-autoloader --no-scripts --ignore-platform-reqs
 
-# ŞİMDİ tüm uygulama kodlarını içeri alıyoruz
+# Şimdi uygulama kodlarını içeri al
 COPY . .
 
-# Autoload dosyasını kodlar içerideyken zorla oluşturuyoruz
+# Autoload oluştur
 RUN composer dump-autoload --optimize
 
 # Yetkileri ver
@@ -28,5 +28,5 @@ RUN chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8080
 
-# Başlatırken cache'leri temizleyerek başlat
-CMD php artisan optimize:clear && php artisan serve --host 0.0.0.0 --port 8080
+# Başlatırken cache temizliği
+CMD php artisan config:clear && php artisan route:clear && php artisan serve --host 0.0.0.0 --port 8080
