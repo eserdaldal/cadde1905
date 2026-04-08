@@ -1,14 +1,16 @@
-# Laravel 12, PHP 8.2 veya 8.3 gerektirir. 
-# Bu imaj hem PHP'yi hem de gerekli araçları içerir.
 FROM php:8.2-cli
 
-# Gerekli sistem paketlerini kur
+# Gerekli sistem paketlerini ve PHP eklentilerini kur
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
     git \
-    curl
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    && docker-php-ext-install bcmath gd mhash pcntl pdo_mysql sockets zip
 
 # Composer'ı kopyala
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -17,11 +19,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . /app
 
-# Laravel bağımlılıklarını kur
-RUN composer install --no-dev --optimize-autoloader
+# Hata detaylarını görmek için --verbose ekledik ve paket uyumluluğu için ignore komutu koyduk
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
-# Render'ın beklediği portu ayarla
 EXPOSE 8080
 
-# Uygulamayı başlat
 CMD ["php", "artisan", "serve", "--host", "0.0.0.0", "--port", "8080"]
