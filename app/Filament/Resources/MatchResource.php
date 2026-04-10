@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MatchResource\Pages;
 use App\Models\WorldCup\WorldCupMatch;
+use App\Models\WorldCup\WorldCup;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -41,8 +42,10 @@ class MatchResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
+        $activeId = WorldCup::activeTournament()?->id;
+
         return parent::getEloquentQuery()
-            ->where('tournament_id', 4);
+            ->when($activeId, fn ($q) => $q->where('tournament_id', $activeId));
     }
 
     public static function canCreate(): bool
@@ -71,6 +74,8 @@ class MatchResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $activeId = WorldCup::activeTournament()?->id;
+
         return $form->schema([
             Forms\Components\Grid::make(3)
                 ->schema([
@@ -85,7 +90,7 @@ class MatchResource extends Resource
                                         ->searchable()
                                         ->preload()
                                         ->required()
-                                        ->default(4)
+                                        ->default($activeId)
                                         ->native(false),
 
                                     Forms\Components\Select::make('home_team_id')

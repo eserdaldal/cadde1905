@@ -19,11 +19,26 @@
     $activeTournament = $activeTournament ?? null;
     $theme = 'event-light';
 
-    $stadiumName = $stadium?->name ?? 'Stadyum';
-    $stadiumCity = $stadium?->city ?: null;
-    $stadiumCountry = $stadium?->country ?: null;
+    // Önce override / api alanlarını kullan, sonra güvenli fallback uygula.
+    $stadiumName = $stadium?->name_override
+        ?? $stadium?->name_api
+        ?? $stadium?->name
+        ?? 'Stadyum';
+
+    $stadiumCity = $stadium?->city_api
+        ?? $stadium?->city
+        ?? null;
+
+    $stadiumCountry = $stadium?->country_api
+        ?? $stadium?->country
+        ?? null;
+
     $stadiumCapacity = $stadium?->capacity ?: null;
-    $stadiumDescription = $stadium?->description ?: null;
+
+    $stadiumDescription = $stadium?->description_editorial
+        ?? $stadium?->description
+        ?? null;
+
     $stadiumAddress = $stadium?->address ?: null;
     $stadiumOpenedYear = $stadium?->opened_year ?: null;
     $stadiumSurfaceType = $stadium?->surface_type ?: null;
@@ -55,7 +70,16 @@
     $metaDescription = $stadium?->meta_description ?: ($stadiumName . ' stadyumu bilgileri, maç takvimi ve detaylar.');
 
     $showInlineInfo = filled($stadiumCity) || filled($stadiumCountry) || filled($stadiumCapacity);
-    $showSidebarDetails = filled($stadiumAddress) || filled($stadiumOpenedYear) || filled($stadiumSurfaceType) || filled($activeTournament?->name);
+
+    $showSidebarDetails = filled($stadiumName)
+        || filled($stadiumCity)
+        || filled($stadiumCountry)
+        || filled($stadiumCapacity)
+        || filled($stadiumAddress)
+        || filled($stadiumOpenedYear)
+        || filled($stadiumSurfaceType)
+        || filled($activeTournament?->name);
+
     $showSidebar = $showSidebarDetails || filled($seatingPlanImage);
 
     $mainColumnClass = $showSidebar ? 'lg:col-span-8' : 'lg:col-span-12';
@@ -125,7 +149,7 @@
                                     @if ($stadiumCapacity)
                                         <div class="flex items-center gap-2">
                                             <span>👥</span>
-                                            <span>{{ number_format((int) $stadiumCapacity, 0, ',', '.') }}</span>
+                                            <span>{{ number_format((int) $stadiumCapacity, 0, ',', '.') }} kapasite</span>
                                         </div>
                                     @endif
                                 </div>
@@ -164,7 +188,7 @@
                             @if ($stadiumCapacity)
                                 <div class="flex items-center gap-2">
                                     <span>👥</span>
-                                    <span>{{ number_format((int) $stadiumCapacity, 0, ',', '.') }}</span>
+                                    <span>{{ number_format((int) $stadiumCapacity, 0, ',', '.') }} kapasite</span>
                                 </div>
                             @endif
                         </div>
@@ -251,35 +275,76 @@
 
                                 <div class="wc-card p-6 md:p-7 bg-[var(--surface-widget)]/75 backdrop-blur-md border border-[var(--border-soft)] shadow-xl">
                                     <div class="space-y-5">
-                                    @if ($stadiumAddress)
                                         <div class="pb-4 border-b border-[var(--border-soft)]">
-                                            <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Adres</div>
-                                            <div class="text-sm font-bold text-[var(--text-primary)] leading-6 break-words">{{ $stadiumAddress }}</div>
-                                        </div>
-                                    @endif
-
-                                    @if ($stadiumSurfaceType)
-                                        <div class="pb-4 border-b border-[var(--border-soft)]">
-                                            <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Zemin Tipi</div>
-                                            <div class="text-sm font-bold text-[var(--text-primary)]">{{ $stadiumSurfaceType ?: 'Bilinmiyor' }}</div>
-                                        </div>
-                                    @endif
-
-                                    @if ($stadiumOpenedYear)
-                                        <div class="pb-4 border-b border-[var(--border-soft)]">
-                                            <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Açılış Yılı</div>
-                                            <div class="text-sm font-bold text-[var(--text-primary)]">{{ $stadiumOpenedYear }}</div>
-                                        </div>
-                                    @endif
-
-                                    @if ($activeTournament?->name)
-                                        <div>
-                                            <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Turnuva</div>
-                                            <div class="text-sm font-bold text-[var(--accent-premium)]">
-                                                {{ $activeTournament?->name }}
+                                            <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Resmi Ad</div>
+                                            <div class="text-sm font-bold text-[var(--text-primary)] leading-6 break-words">
+                                                {{ $stadiumName }}
                                             </div>
                                         </div>
-                                    @endif
+
+                                        @if ($stadiumCity)
+                                            <div class="pb-4 border-b border-[var(--border-soft)]">
+                                                <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Şehir</div>
+                                                <div class="text-sm font-bold text-[var(--text-primary)]">
+                                                    {{ $stadiumCity }}
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @if ($stadiumCountry)
+                                            <div class="pb-4 border-b border-[var(--border-soft)]">
+                                                <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Ülke</div>
+                                                <div class="text-sm font-bold text-[var(--text-primary)]">
+                                                    {{ $stadiumCountry }}
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @if ($stadiumCapacity)
+                                            <div class="pb-4 border-b border-[var(--border-soft)]">
+                                                <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Kapasite</div>
+                                                <div class="text-sm font-bold text-[var(--text-primary)]">
+                                                    {{ number_format((int) $stadiumCapacity, 0, ',', '.') }}
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @if ($stadiumAddress)
+                                            <div class="pb-4 border-b border-[var(--border-soft)]">
+                                                <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Adres</div>
+                                                <div class="text-sm font-bold text-[var(--text-primary)] leading-6 break-words">
+                                                    {{ $stadiumAddress }}
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @if ($stadiumSurfaceType)
+                                            <div class="pb-4 border-b border-[var(--border-soft)]">
+                                                <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Zemin Tipi</div>
+                                                <div class="text-sm font-bold text-[var(--text-primary)]">
+                                                    {{ $stadiumSurfaceType }}
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @if ($stadiumOpenedYear)
+                                            <div class="pb-4 border-b border-[var(--border-soft)]">
+                                                <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Açılış Yılı</div>
+                                                <div class="text-sm font-bold text-[var(--text-primary)]">
+                                                    {{ $stadiumOpenedYear }}
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @if ($activeTournament?->name)
+                                            <div>
+                                                <div class="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-2">Turnuva</div>
+                                                <div class="text-sm font-bold text-[var(--accent-premium)]">
+                                                    {{ $activeTournament?->name }}
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </section>
                         @endif

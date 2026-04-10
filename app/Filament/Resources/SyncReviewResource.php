@@ -5,14 +5,12 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SyncReviewResource\Pages;
 use App\Models\WorldCup\WorldCupMatch;
 use App\Models\WorldCup\StadiumAlias;
-use Filament\Forms;
-use Filament\Forms\Form;
+use App\Models\WorldCup\WorldCup;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
 class SyncReviewResource extends Resource
 {
@@ -27,8 +25,10 @@ class SyncReviewResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
+        $activeId = WorldCup::activeTournament()?->id;
+
         return parent::getEloquentQuery()
-            ->where('tournament_id', 4)
+            ->when($activeId, fn ($q) => $q->where('tournament_id', $activeId))
             ->with(['stadium', 'matchStadiumMap.stadium']);
     }
 
@@ -58,7 +58,7 @@ class SyncReviewResource extends Resource
                 Tables\Columns\TextColumn::make('venue_city_api')
                     ->label('API Şehir')
                     ->toggleable(isToggledHiddenByDefault: true),
-                
+
                 Tables\Columns\TextColumn::make('status')
                     ->label('Durum')
                     ->badge()
@@ -70,17 +70,15 @@ class SyncReviewResource extends Resource
                         if ($record->is_locked) {
                             return 'Kilitli';
                         }
-                        if (!$canonicalId) {
+                        if (! $canonicalId) {
                             return 'Eksik Veri';
                         }
-                        if (!$mapping) {
+                        if (! $mapping) {
                             return 'Eşleşme Bulunamadı';
                         }
                         if ($mapping->stadium_id !== $canonicalId) {
                             return 'İncelenecek';
                         }
-                        // API verisiyle karşılaştırma (basit string match veya alias lookup simülasyonu)
-                        // Burada sadece canonical vs current stadium kontrolü yapıyoruz user isteğine göre
                         if ($apiVenueName && $record->stadium?->name_api !== $apiVenueName) {
                             return 'Uyumsuz';
                         }
@@ -108,29 +106,29 @@ class SyncReviewResource extends Resource
                     ->relationship('stadium', 'name_api'),
             ])
             ->actions([
-                // Kanonik Değeri Uygula
                 Action::make('apply_canonical')
                     ->label('Kanonik Uygula')
                     ->icon('heroicon-m-check-badge')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(fn (WorldCupMatch $record) => !$record->is_locked && $record->matchStadiumMap)
+                    ->visible(fn (WorldCupMatch $record) => ! $record->is_locked && $record->matchStadiumMap)
                     ->action(function (WorldCupMatch $record) {
                         $mapping = $record->matchStadiumMap;
+
                         if ($mapping) {
                             $record->update(['stadium_id' => $mapping->stadium_id]);
                         }
                     }),
 
-                // API Verisini Kabul Et (Güvenli)
                 Action::make('accept_api')
                     ->label('API Kabul Et')
                     ->icon('heroicon-m-arrow-path')
                     ->color('warning')
                     ->requiresConfirmation()
-                    ->visible(fn (WorldCupMatch $record) => !$record->is_locked && $record->venue_name_api)
+                    ->visible(fn (WorldCupMatch $record) => ! $record->is_locked && $record->venue_name_api)
                     ->action(function (WorldCupMatch $record) {
                         $alias = StadiumAlias::where('alias_name', $record->venue_name_api)->first();
+
                         if ($alias) {
                             $record->update(['stadium_id' => $alias->stadium_id]);
                         } else {
@@ -141,12 +139,11 @@ class SyncReviewResource extends Resource
                         }
                     }),
 
-                // Kilitle / Kilidi Aç
                 Action::make('toggle_lock')
                     ->label(fn (WorldCupMatch $record) => $record->is_locked ? 'Kilidi Aç' : 'Kilitle')
                     ->icon(fn (WorldCupMatch $record) => $record->is_locked ? 'heroicon-m-lock-open' : 'heroicon-m-lock-closed')
                     ->color(fn (WorldCupMatch $record) => $record->is_locked ? 'gray' : 'info')
-                    ->action(fn (WorldCupMatch $record) => $record->update(['is_locked' => !$record->is_locked])),
+                    ->action(fn (WorldCupMatch $record) => $record->update(['is_locked' => ! $record->is_locked])),
 
                 Tables\Actions\EditAction::make()->label('Düzenle'),
             ]);

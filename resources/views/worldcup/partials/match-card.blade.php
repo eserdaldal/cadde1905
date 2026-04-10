@@ -40,6 +40,7 @@
         };
 
         $displayRound = $normalizeRound($match->round ?? 'Grup Aşaması');
+
         $displayTime = $match->time ?? null;
         $displayTime = blank($displayTime) || in_array(strtoupper((string) $displayTime), ['TBD', 'TBA'], true)
             ? 'Saat açıklanacak'
@@ -53,14 +54,31 @@
         $homeFlagUrl = data_get($match, 'home_flag_url') ?: data_get($match, 'homeTeam.flag_url');
         $awayFlagUrl = data_get($match, 'away_flag_url') ?: data_get($match, 'awayTeam.flag_url');
 
-        $stadiumName = data_get($match, 'stadium.name') ?? $match->stadium_name ?? $match->stadium_title ?? null;
+        // KRİTİK DÜZELTME:
+        // Önce override / api alanlarını kullan, sonra güvenli fallback uygula.
+        $stadiumName = data_get($match, 'stadium.name_override')
+            ?? data_get($match, 'stadium.name_api')
+            ?? data_get($match, 'stadium.name')
+            ?? $match->stadium_name
+            ?? $match->stadium_title
+            ?? null;
+
         if (!$stadiumName && isset($match->stadium) && is_string($match->stadium)) {
             $stadiumName = $match->stadium;
-        } elseif (!$stadiumName && isset($match->stadium) && is_object($match->stadium) && isset($match->stadium->name)) {
-            $stadiumName = $match->stadium->name;
+        } elseif (
+            !$stadiumName
+            && isset($match->stadium)
+            && is_object($match->stadium)
+        ) {
+            $stadiumName = $match->stadium->name_override
+                ?? $match->stadium->name_api
+                ?? $match->stadium->name
+                ?? null;
         }
 
-        $stadiumCity = data_get($match, 'stadium.city') ?? null;
+        $stadiumCity = data_get($match, 'stadium.city_api')
+            ?? data_get($match, 'stadium.city')
+            ?? null;
 
         $matchId = $match->id ?? null;
         $matchSlug = $match->slug ?? null;

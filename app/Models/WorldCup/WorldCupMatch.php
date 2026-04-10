@@ -74,7 +74,6 @@ class WorldCupMatch extends Model
 
     public function matchStadiumMap(): BelongsTo
     {
-        return $this->belongsTo(MatchStadiumMap::class, 'slot_number', 'slot_number')
-            ->where('tournament_id', 4);
+        return $this->belongsTo(MatchStadiumMap::class, 'slot_number', 'slot_number');
     }
 }

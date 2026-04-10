@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TeamResource\Pages;
 use App\Models\WorldCup\Team;
+use App\Models\WorldCup\WorldCup;
 use Filament\Forms;
 use Filament\Forms\Get;
 use Filament\Forms\Form;
@@ -42,8 +43,10 @@ class TeamResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
+        $activeId = WorldCup::activeTournament()?->id;
+
         return parent::getEloquentQuery()
-            ->where('tournament_id', 4);
+            ->when($activeId, fn ($q) => $q->where('tournament_id', $activeId));
     }
 
     public static function canDelete($record): bool
@@ -58,6 +61,8 @@ class TeamResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $activeId = WorldCup::activeTournament()?->id;
+
         return $form->schema([
             Forms\Components\Grid::make(3)
                 ->schema([
@@ -72,6 +77,7 @@ class TeamResource extends Resource
                                         ->searchable()
                                         ->preload()
                                         ->required()
+                                        ->default($activeId)
                                         ->native(false),
 
                                     Forms\Components\Select::make('group_id')

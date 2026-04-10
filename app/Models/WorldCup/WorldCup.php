@@ -48,6 +48,14 @@ class WorldCup extends Model
         return $query->where('is_active', true);
     }
 
+    public static function activeTournament(): ?self
+    {
+        return static::query()
+            ->active()
+            ->orderByDesc('year')
+            ->first();
+    }
+
     public function groups(): HasMany
     {
         return $this->hasMany(Group::class, 'tournament_id');

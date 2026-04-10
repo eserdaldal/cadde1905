@@ -38,11 +38,9 @@ class Team extends Model
         'is_visible' => 'boolean',
     ];
 
-    protected static function booted(): void
+    public function scopeVisible(Builder $query): Builder
     {
-        static::addGlobalScope('visible', function (Builder $query) {
-            $query->where('is_visible', true);
-        });
+        return $query->where('is_visible', true);
     }
 
     public function scopeFeatured(Builder $query): Builder

@@ -9,6 +9,8 @@
 @extends('layouts.worldcup')
 
 @php
+    use Illuminate\Support\Facades\DB;
+
     $match = $match ?? null;
     $homeTeam = $match?->homeTeam ?? null;
     $awayTeam = $match?->awayTeam ?? null;
@@ -59,9 +61,37 @@
         $matchDate = str_ireplace($engMonths, $trMonths, $matchDate);
     }
 
-    $stadiumName = $match?->stadium?->name ?? null;
-    $stadiumCity = $match?->stadium?->city ?? null;
+    $stadiumName = $match?->stadium?->name_override
+        ?? $match?->stadium?->name_api
+        ?? $match?->stadium?->name
+        ?? null;
+
+    $stadiumCity = $match?->stadium?->city_api
+        ?? $match?->stadium?->city
+        ?? null;
+
     $stadiumCapacity = $match?->stadium?->capacity ?? null;
+
+    $stadiumSlug = $match?->stadium?->slug
+        ?? $match?->stadium_slug
+        ?? null;
+
+    if (! $stadiumSlug && $stadiumName) {
+        $resolvedStadium = DB::table('world_cup_stadiums')
+            ->select('slug')
+            ->where('tournament_id', $activeTournament?->id)
+            ->where(function ($query) use ($stadiumName) {
+                $query->where('name_override', $stadiumName)
+                    ->orWhere('name_api', $stadiumName);
+            })
+            ->first();
+
+        $stadiumSlug = $resolvedStadium->slug ?? null;
+    }
+
+    $stadiumDetailUrl = $stadiumSlug
+        ? route('worldcup.stadiums.show', $stadiumSlug)
+        : route('worldcup.stadiums.index');
 
     $scoreHome = $match?->home_score;
     $scoreAway = $match?->away_score;
@@ -333,7 +363,7 @@
                     </p>
                  </div>
                  <div class="flex-shrink-0">
-                     <a href="{{ route('worldcup.stadiums.index') }}" class="px-6 py-3 rounded-full bg-[var(--surface-base)] border border-[var(--border-soft)] text-[var(--text-primary)] text-xs font-black uppercase tracking-widest hover:bg-[var(--border-soft)] transition-all">Stadyum Detayları</a>
+                     <a href="{{ $stadiumDetailUrl }}" class="px-6 py-3 rounded-full bg-[var(--surface-base)] border border-[var(--border-soft)] text-[var(--text-primary)] text-xs font-black uppercase tracking-widest hover:bg-[var(--border-soft)] transition-all">Stadyum Detayları</a>
                  </div>
             </div>
         </section>

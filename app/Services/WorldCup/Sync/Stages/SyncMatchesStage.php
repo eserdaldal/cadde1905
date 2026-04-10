@@ -157,14 +157,14 @@ final class SyncMatchesStage implements SyncStageInterface
             $record->venue_external_id_api = $venueId ? (string) $venueId : $record->venue_external_id_api;
 
             // FAZ 7 & 8 — Guard: Tournament ID 4 (2026 World Cup) için Match-Stadium Protection
-            if ($tournamentId === 4) {
+            if ($tournamentId) {
                 if ($record->is_locked) {
                     // Kilitli kaydı atla (stadium_id dokunma)
                 } else {
                     // Canonical mapping kontrol et (slot_number üzerinden)
                     if ($record->slot_number) {
                         $canonicalMap = \Illuminate\Support\Facades\DB::table('world_cup_match_stadium_map')
-                            ->where('tournament_id', 4)
+                            ->where('tournament_id', $tournamentId)
                             ->where('slot_number', $record->slot_number)
                             ->first();
 

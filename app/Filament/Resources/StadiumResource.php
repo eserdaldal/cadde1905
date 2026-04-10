@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\StadiumResource\Pages;
 use App\Models\WorldCup\Stadium;
+use App\Models\WorldCup\WorldCup;
 use Filament\Forms;
 use Filament\Forms\Get;
 use Filament\Forms\Form;
@@ -13,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Unique;
+use Illuminate\Database\Eloquent\Builder;
 
 class StadiumResource extends Resource
 {
@@ -31,14 +33,23 @@ class StadiumResource extends Resource
         return (bool) ($user?->isSuperAdmin() || $user?->isAdmin());
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        $activeId = WorldCup::activeTournament()?->id;
+
+        return parent::getEloquentQuery()
+            ->when($activeId, fn ($q) => $q->where('tournament_id', $activeId));
+    }
+
     public static function form(Form $form): Form
     {
+        $activeId = WorldCup::activeTournament()?->id;
+
         return $form->schema([
             Forms\Components\Grid::make(3)
                 ->schema([
                     Forms\Components\Group::make()
                         ->schema([
-                            // BÖLÜM 1 — TEMEL BİLGİLER
                             Forms\Components\Section::make('Temel Bilgiler')
                                 ->schema([
                                     Forms\Components\Select::make('tournament_id')
@@ -48,6 +59,7 @@ class StadiumResource extends Resource
                                         ->searchable()
                                         ->preload()
                                         ->required()
+                                        ->default($activeId)
                                         ->columnSpan(2),
 
                                     Forms\Components\TextInput::make('name_api')
@@ -77,7 +89,7 @@ class StadiumResource extends Resource
                                         ->numeric(),
 
                                     Forms\Components\TextInput::make('capacity_override')
-                                        ->label('Kapasite (Manuel/Override)')
+                                        ->label('Kapasite (Override)')
                                         ->numeric(),
 
                                     Forms\Components\TextInput::make('opened_year')
@@ -85,8 +97,7 @@ class StadiumResource extends Resource
                                         ->numeric(),
 
                                     Forms\Components\TextInput::make('surface_type')
-                                        ->label('Zemin Tipi')
-                                        ->placeholder('Örn: Hibrit Çim'),
+                                        ->label('Zemin Tipi'),
 
                                     Forms\Components\TextInput::make('latitude')
                                         ->label('Enlem')
@@ -98,7 +109,6 @@ class StadiumResource extends Resource
                                 ])
                                 ->columns(2),
 
-                            // BÖLÜM 2 — İÇERİK
                             Forms\Components\Section::make('İçerik ve Medya')
                                 ->schema([
                                     Forms\Components\RichEditor::make('description')
@@ -106,19 +116,17 @@ class StadiumResource extends Resource
                                         ->columnSpanFull(),
 
                                     Forms\Components\FileUpload::make('hero_image')
-                                        ->label('Kapak Görseli')
+                                        ->label('Kapak')
                                         ->directory('stadiums/hero')
-                                        ->image()
-                                        ->columnSpan(1),
+                                        ->image(),
 
                                     Forms\Components\FileUpload::make('seating_plan_image')
                                         ->label('Oturma Planı')
                                         ->directory('stadiums/seating')
-                                        ->image()
-                                        ->columnSpan(1),
+                                        ->image(),
 
                                     Forms\Components\FileUpload::make('gallery')
-                                        ->label('Galeri Görselleri')
+                                        ->label('Galeri')
                                         ->directory('stadiums/gallery')
                                         ->image()
                                         ->multiple()
@@ -128,24 +136,20 @@ class StadiumResource extends Resource
                                 ])
                                 ->columns(2),
 
-                            // BÖLÜM 3 — SEO
-                            Forms\Components\Section::make('SEO Ayarları')
+                            Forms\Components\Section::make('SEO')
                                 ->schema([
                                     Forms\Components\TextInput::make('meta_title')
-                                        ->label('SEO Başlığı')
-                                        ->maxLength(255),
+                                        ->label('SEO Başlığı'),
 
                                     Forms\Components\Textarea::make('meta_description')
-                                        ->label('SEO Açıklaması')
-                                        ->rows(3),
+                                        ->label('SEO Açıklaması'),
                                 ]),
                         ])
                         ->columnSpan(2),
 
                     Forms\Components\Group::make()
                         ->schema([
-                            // BÖLÜM 4 — DURUM
-                            Forms\Components\Section::make('Durum ve Yayın')
+                            Forms\Components\Section::make('Durum')
                                 ->schema([
                                     Forms\Components\Toggle::make('is_visible')
                                         ->label('Görünür')
@@ -156,8 +160,7 @@ class StadiumResource extends Resource
                                         ->default(false),
 
                                     Forms\Components\TextInput::make('slug')
-                                        ->label('URL (Slug)')
-                                        ->helperText('Boş bırakılırsa otomatik üretilir.')
+                                        ->label('Slug')
                                         ->unique(ignoreRecord: true),
                                 ]),
 
@@ -169,7 +172,7 @@ class StadiumResource extends Resource
                                             ->color('primary')
                                             ->action(fn ($livewire) => method_exists($livewire, 'save') ? $livewire->save() : $livewire->create())
                                             ->extraAttributes(['class' => 'w-full']),
-                                    ])->fullWidth(),
+                                    ]),
                                 ])
                                 ->compact(),
                         ])
@@ -186,13 +189,17 @@ class StadiumResource extends Resource
                     ->label('Ad')
                     ->formatStateUsing(fn (?string $state, Stadium $record) => $state ?: $record->name_api)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('city_api')->label('Şehir')->sortable(),
+
+                Tables\Columns\TextColumn::make('city_api')->label('Şehir'),
+
                 Tables\Columns\TextColumn::make('display_capacity')
                     ->label('Kapasite')
                     ->suffix(' kişi'),
+
                 Tables\Columns\TextColumn::make('aliases_count')
-                    ->label('Takma Adlar')
+                    ->label('Alias')
                     ->counts('aliases'),
+
                 Tables\Columns\IconColumn::make('is_featured')->label('Öne Çıkan')->boolean(),
                 Tables\Columns\IconColumn::make('is_visible')->label('Görünür')->boolean(),
             ])
