@@ -1,0 +1,223 @@
+/* Miras page-specific styles */
+.miras-stat-badge {
+    background: rgba(var(--text-rgb), 0.08);
+    border-color: rgba(var(--text-rgb), 0.2);
+    color: var(--red);
+}
+
+.miras-year-label {
+    color: var(--red);
+}
+
+.miras-quicklink {
+    color: var(--red);
+}
+
+.miras-quicklink:hover {
+    color: var(--yellow);
+}
+
+.miras-hero-content {
+    width: 100%;
+    flex: 1 1 auto;
+    max-width: 100%;
+}
+
+.miras-hero-visual {
+    position: relative;
+    width: 100%;
+    border-radius: 22px;
+    overflow: hidden;
+    min-height: 200px;
+    aspect-ratio: 20 / 6;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+}
+
+.miras-hero {
+    align-items: stretch;
+}
+
+.miras-hero-visual::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 8, 6, 0.05) 0%, rgba(10, 8, 6, 0.4) 65%, rgba(10, 8, 6, 0.65) 100%);
+    pointer-events: none;
+}
+
+.miras-hero-media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    max-width: none;
+    max-height: none;
+    filter: contrast(1.02) saturate(1.05);
+}
+
+.miras-hero-text {
+    position: absolute;
+    left: 26px;
+    bottom: 20px;
+    max-width: min(82%, 980px);
+    font-size: 15px;
+    line-height: 1.7;
+    color: #fff;
+    text-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    z-index: 1;
+}
+
+.miras-hero-text::before {
+    content: "";
+    position: absolute;
+    left: -14px;
+    top: -10px;
+    width: 6px;
+    height: calc(100% + 14px);
+    background: rgba(252, 184, 22, 0.85);
+    border-radius: 999px;
+    box-shadow: 0 0 12px rgba(252, 184, 22, 0.35);
+}
+
+.miras-hero-text {
+    padding-left: 14px;
+}
+
+@media (max-width: 900px) {
+    .miras-hero-visual {
+        aspect-ratio: 16 / 7;
+        min-height: 200px;
+    }
+
+    .miras-hero-text {
+        max-width: 90%;
+        font-size: 14px;
+        left: 18px;
+        bottom: 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .miras-hero-visual {
+        aspect-ratio: 16 / 9;
+        min-height: 180px;
+    }
+
+    .miras-hero-text {
+        font-size: 13px;
+    }
+}
+
+.miras-mini-grid {
+    align-content: start;
+}
+
+.miras-mini-card {
+    min-height: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.miras-timeline {
+    --timeline-dot-top: 28px;
+    --timeline-dot-size: 22px;
+    --timeline-line-top: 12px;
+    --timeline-line-bottom: 12px;
+    --timeline-connector-width: 32px;
+}
+
+.miras-timeline__year {
+    background: linear-gradient(135deg, rgba(184, 138, 19, 0.22), rgba(184, 138, 19, 0.38));
+    border-color: rgba(184, 138, 19, 0.55);
+    color: var(--text);
+}
+
+[data-theme="dark"] .miras-timeline__year {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(212, 175, 55, 0.34));
+    border-color: rgba(212, 175, 55, 0.5);
+}
+
+.miras-timeline__line,
+.miras-timeline__dot,
+.miras-timeline__connector {
+    display: block;
+}
+
+.miras-timeline__line {
+    box-shadow: 0 0 30px var(--museum-timeline-line-glow);
+}
+
+.miras-timeline__dot {
+    position: absolute;
+    left: 50%;
+    top: var(--timeline-dot-top);
+    width: var(--timeline-dot-size);
+    height: var(--timeline-dot-size);
+    border-radius: 999px;
+    transform: translateX(-50%);
+    background: var(--bg);
+    border-color: var(--museum-timeline-node);
+    box-shadow: 0 0 0 6px rgba(252, 184, 22, 0.12), 0 0 22px rgba(169, 29, 53, 0.18);
+}
+
+.miras-timeline__connector {
+    position: absolute;
+    opacity: 0.9;
+}
+
+.miras-timeline__item.left .miras-timeline__dot,
+.miras-timeline__item.right .miras-timeline__dot {
+    left: 50%;
+    right: auto;
+}
+
+.miras-timeline__item.left .miras-timeline__connector,
+.miras-timeline__item.right .miras-timeline__connector {
+    left: 50%;
+    right: auto;
+}
+
+.miras-timeline--compact .miras-timeline__dot {
+    left: 28px;
+    transform: translateX(-50%);
+}
+
+.miras-timeline--compact .miras-timeline__connector {
+    left: 28px;
+    transform: none;
+}
+
+@media (max-width: 992px) {
+    .miras-timeline__dot {
+        left: 28px;
+        transform: translateX(-50%);
+    }
+
+    .miras-timeline__connector {
+        left: 28px;
+        transform: none;
+    }
+}
+
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal-on-scroll {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}

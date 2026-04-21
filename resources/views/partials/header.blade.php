@@ -31,9 +31,9 @@
             {{-- Arama: gizli input + toggle butonu --}}
             <div class="flex items-center gap-x-1">
                 <div id="search-box" class="flex items-center psl-search-box">
-                    <form action="{{ route('news.index') }}" method="GET" class="flex items-center">
-                        <input id="search-input" type="text" name="q" placeholder="Ara..." autocomplete="off"
-                            class="w-44 px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-[var(--border)] bg-gray-100 dark:bg-[var(--card2)] text-[var(--text)] placeholder-gray-500 dark:placeholder-[var(--muted)] focus:outline-none focus:border-[var(--red)] dark:focus:border-[var(--red)] transition-colors">
+                    <form action="{{ route('search.index') }}" method="GET" class="flex items-center">
+                        <input id="search-input" type="text" name="q" value="{{ request('q') }}" placeholder="Ara..." autocomplete="off" onfocus="if(!this.dataset.cleared){this.dataset.cleared='1';this.value='';}"
+                            class="w-44 px-3 py-1.5 text-sm rounded-lg border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors">
                     </form>
                 </div>
                 {{-- INLINE_OK: dynamic search box visibility toggle --}}

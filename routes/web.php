@@ -19,6 +19,7 @@ use App\Http\Controllers\TrophyController;
 use App\Http\Controllers\TrophyPreviewController;
 use App\Http\Controllers\HistoricalMatchPreviewController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SearchController;
 
 // ═══ HOMEPAGE ═══
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -37,6 +38,16 @@ Route::get('/etiket/{slug}', [TagController::class, 'show'])->name('tag.show');
 Route::get('/mac-merkezi', [MatchController::class, 'show'])->name('match.show');
 Route::get('/puan-durumu', [StandingsController::class, 'index'])->name('standings.index');
 Route::get('/kronoloji', TimelineController::class)->name('timeline.index');
+
+// ═══ PLATFORM / CORPORATE / LEGAL ═══
+Route::prefix('platform')->name('platform.')->group(function () {
+    Route::view('/', 'pages.platform.index')->name('index');
+    Route::view('/hakkimizda', 'pages.platform.about')->name('about');
+    Route::view('/iletisim', 'pages.platform.contact')->name('contact');
+    Route::view('/gizlilik-politikasi', 'pages.platform.privacy')->name('privacy');
+    Route::view('/kullanim-sartlari', 'pages.platform.terms')->name('terms');
+    Route::view('/kvkk', 'pages.platform.kvkk')->name('kvkk');
+});
 
 // ═══ MIRAS (MUSEUM) SECTION ═══
 Route::prefix('miras')->name('miras.')->group(function () {
@@ -91,3 +102,9 @@ Route::middleware(['auth', 'signed'])->prefix('preview')->name('preview.')->grou
 
 require __DIR__ . '/worldcup.php';
 require __DIR__ . '/engelsiz.php';
+
+Route::get('/arama', [SearchController::class, 'index'])->name('search.index');
+
+// Match Detail Page
+Route::get('/mac/{fixture_id}', [\App\Http\Controllers\Match\MatchDetailController::class, 'show'])->name('match.detail');
+

@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
@@ -27,6 +28,20 @@ class LegendResource extends Resource
     protected static ?string $modelLabel = 'Efsane';
     protected static ?string $pluralModelLabel = 'Efsaneler';
     protected static ?int $navigationSort = 40;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = Auth::user();
+
+        return (bool) ($user?->isSuperAdmin() || $user?->isAdmin() || $user?->isEditor());
+    }
+
+    public static function canViewAny(): bool
+    {
+        $user = Auth::user();
+
+        return (bool) ($user?->isSuperAdmin() || $user?->isAdmin() || $user?->isEditor());
+    }
 
     public static function form(Form $form): Form
     {
@@ -185,6 +200,26 @@ class LegendResource extends Resource
                                             ->numeric()
                                             ->minValue(1800)
                                             ->maxValue(2100),
+                                    ])
+                                    ->columns(1),
+
+                                Forms\Components\Section::make('Yayın & Önem')
+                                    ->collapsible()
+                                    ->schema([
+                                        Forms\Components\Toggle::make('is_published')
+                                            ->label('Yayında')
+                                            ->default(false),
+
+                                        Forms\Components\DateTimePicker::make('published_at')
+                                            ->label('Yayın Zamanı'),
+
+                                        Forms\Components\TextInput::make('importance_score')
+                                            ->label('Önem Skoru')
+                                            ->numeric()
+                                            ->default(0),
+
+                                        Forms\Components\Toggle::make('is_featured')
+                                            ->label('Öne Çıkarılan Efsane'),
 
                                         Forms\Components\Select::make('tags')
                                             ->label('Etiketler')
@@ -201,8 +236,7 @@ class LegendResource extends Resource
                                             ->default(fn () => !SiteModeService::isLive())
                                             ->dehydrated(fn ($state) => filled($state))
                                             ->columnSpanFull(),
-                                    ])
-                                    ->columns(1),
+                                    ]),
 
                                 Forms\Components\Section::make('Kapak Görseli')
                                     ->collapsible()

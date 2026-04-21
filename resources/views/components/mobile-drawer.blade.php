@@ -24,7 +24,7 @@
 
             <div class="shrink-0 border-b border-gray-200 px-4 py-4 dark:border-[#2A2A28]">
                 <form action="{{ route('news.index') }}" method="GET">
-                    <input type="text" name="q" placeholder="Haberlerde ara..." autocomplete="off"
+                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Haberlerde ara..." autocomplete="off" onfocus="if(!this.dataset.cleared){this.dataset.cleared='1';this.value='';}"
                         class="w-full rounded-xl border border-gray-300 bg-gray-100 px-3 py-2.5 text-sm text-black placeholder-gray-500 transition-colors focus:border-[#A91D35] focus:outline-none dark:border-[#333] dark:bg-[#1A1A19] dark:text-white dark:placeholder-gray-400 dark:focus:border-[#A91D35]">
                 </form>
             </div>
@@ -47,46 +47,7 @@
                         Miras
                     </a>
 
-                    <div
-                        class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-[#2A2A28] dark:bg-[#161615]">
-                        <button type="button"
-                            class="flex w-full items-center justify-between px-3 py-3 text-left text-[15px] font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-[#1E1E1C]"
-                            data-mobile-accordion-button data-target="mobile-accordion-branslar" aria-expanded="false"
-                            aria-controls="mobile-accordion-branslar">
-                            <span>Branşlar</span>
-                            <svg class="h-4 w-4 shrink-0 transition-transform duration-200" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" data-mobile-accordion-icon
-                                aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-
-                        <div id="mobile-accordion-branslar"
-                            class="hidden border-t border-gray-200 dark:border-[#2A2A28]" data-mobile-accordion-panel>
-                            <div class="py-1">
-                                <a href="#"
-                                    class="block px-4 py-3 text-[14px] font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[#2A2A28] dark:hover:text-white">
-                                    Futbol
-                                </a>
-                                <a href="#"
-                                    class="block px-4 py-3 text-[14px] font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[#2A2A28] dark:hover:text-white">
-                                    Basketbol Erkek
-                                </a>
-                                <a href="#"
-                                    class="block px-4 py-3 text-[14px] font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[#2A2A28] dark:hover:text-white">
-                                    Basketbol Kadın
-                                </a>
-                                <a href="#"
-                                    class="block px-4 py-3 text-[14px] font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[#2A2A28] dark:hover:text-white">
-                                    Voleybol Erkek
-                                </a>
-                                <a href="#"
-                                    class="block px-4 py-3 text-[14px] font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[#2A2A28] dark:hover:text-white">
-                                    Voleybol Kadın
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    
 
                     <div
                         class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-[#2A2A28] dark:bg-[#161615]">
@@ -113,46 +74,14 @@
                                     class="block px-4 py-3 text-[14px] transition-colors {{ request()->routeIs('standings.*') ? 'bg-gray-100 font-semibold text-gray-900 dark:bg-[#2A2A28] dark:text-white' : 'font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[#2A2A28] dark:hover:text-white' }}">
                                     Puan Durumu
                                 </a>
-                                <span
-                                    class="block select-none px-4 py-3 text-[14px] font-medium text-gray-400 dark:text-gray-500">
-                                    Fikstür (Yakında)
-                                </span>
                             </div>
                         </div>
                     </div>
 
-                    <div
-                        class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-[#2A2A28] dark:bg-[#161615]">
-                        <button type="button"
-                            class="flex w-full items-center justify-between px-3 py-3 text-left text-[15px] font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-[#1E1E1C]"
-                            data-mobile-accordion-button data-target="mobile-accordion-platform" aria-expanded="false"
-                            aria-controls="mobile-accordion-platform">
-                            <span>Platform</span>
-                            <svg class="h-4 w-4 shrink-0 transition-transform duration-200" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" data-mobile-accordion-icon
-                                aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-
-                        <div id="mobile-accordion-platform"
-                            class="hidden border-t border-gray-200 dark:border-[#2A2A28]" data-mobile-accordion-panel>
-                            <div class="py-1">
-                                <a href="#"
-                                    class="block px-4 py-3 text-[14px] font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[#2A2A28] dark:hover:text-white">
-                                    Hakkımızda
-                                </a>
-                                <a href="#"
-                                    class="block px-4 py-3 text-[14px] font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[#2A2A28] dark:hover:text-white">
-                                    İletişim
-                                </a>
-                                <a href="#"
-                                    class="block px-4 py-3 text-[14px] font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[#2A2A28] dark:hover:text-white">
-                                    Yasal Alanlar
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    <a href="{{ route('platform.index') }}"
+                        class="block rounded-xl px-3 py-3 text-[15px] transition-colors {{ request()->routeIs('platform.*') ? 'bg-gray-100 font-semibold text-gray-900 dark:bg-[#2A2A28] dark:text-white' : 'font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[#2A2A28] dark:hover:text-white' }}">
+                        Platform
+                    </a>
                 </div>
             </nav>
         </div>

@@ -79,6 +79,7 @@ class News extends Model
             'caption',
             'credit',
             'notes',
+            'watermark_enabled',
         ])->withTimestamps();
     }
 
@@ -103,6 +104,90 @@ class News extends Model
             ->wherePivot('usage_type', 'cover')
             ->wherePivot('is_primary', true)
             ->orderByDesc('mediaables.id');
+    }
+
+    /**
+     * Centralized method to get the news cover URL.
+     * Fallback Chain: WM (if enabled & exists) -> Original -> Placeholder.
+     */
+    public function coverImageUrl(): string
+    {
+        $media = $this->primaryCover()->first();
+        $placeholder = asset('images/placeholders/news-placeholder.webp');
+
+        if (! $media || empty($media->path)) {
+            return $placeholder;
+        }
+
+        $disk = $media->disk ?: 'public';
+        $path = $media->path;
+
+        // Watermark check
+        if ($media->pivot->watermark_enabled) {
+            $dir = dirname($path);
+            $uuid = $media->uuid;
+            $extension = $media->extension;
+            
+            // Expected watermark path: derived/uuid__wm.ext
+            $wmPath = $dir . '/derived/' . $uuid . '__wm.' . $extension;
+
+            // Check physical presence for safety (first fallback tier)
+            if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($wmPath)) {
+                return \Illuminate\Support\Facades\Storage::disk($disk)->url($wmPath);
+            }
+            
+            // If wm path doesn't match extension, try .webp as fallback (WatermarkGenerator might force it)
+            $wmWebpPath = $dir . '/derived/' . $uuid . '__wm.webp';
+            if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($wmWebpPath)) {
+                return \Illuminate\Support\Facades\Storage::disk($disk)->url($wmWebpPath);
+            }
+        }
+
+        // Tier 2: Original
+        return \Illuminate\Support\Facades\Storage::disk($disk)->url($path);
+    }
+
+    /**
+     * Get the news cover thumbnail URL.
+     * Fallback Chain: WebP Thumbnail -> Original Ext Thumbnail -> Real Cover (WM/Original) -> Placeholder.
+     */
+    public function coverThumbUrl(): string
+    {
+        $media = $this->primaryCover()->first();
+
+        // If no media, use coverImageUrl() which handles placeholder logic
+        if (! $media || empty($media->path)) {
+            return $this->coverImageUrl();
+        }
+
+        $disk = $media->disk ?: 'public';
+        $path = $media->path;
+        $dir = dirname($path);
+        $uuid = $media->uuid;
+        
+        // Tier 1: WebP Thumbnail Preference
+        $thumbWebpPath = $dir . '/derived/' . $uuid . '__thumb.webp';
+        if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($thumbWebpPath)) {
+            return \Illuminate\Support\Facades\Storage::disk($disk)->url($thumbWebpPath);
+        }
+
+        // Tier 2: Original Extension Thumbnail
+        $thumbPath = $dir . '/derived/' . $uuid . '__thumb.' . $media->extension;
+        if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($thumbPath)) {
+            return \Illuminate\Support\Facades\Storage::disk($disk)->url($thumbPath);
+        }
+
+        // Tier 3: Full Cover (Watermarked or Original)
+        return $this->coverImageUrl();
+    }
+
+    /**
+     * Get the news cover srcset for responsive images.
+     * Combines Thumb (640w) and Full (2000w).
+     */
+    public function coverSrcset(): string
+    {
+        return $this->coverThumbUrl() . ' 640w, ' . $this->coverImageUrl() . ' 2000w';
     }
 
     public function getListExcerptAttribute(): string

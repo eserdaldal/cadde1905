@@ -4,7 +4,6 @@ namespace App\Services\Homepage;
 
 use App\Models\News;
 use App\Services\Homepage\Normalizers\NewsHomepageNormalizer;
-use App\Services\SiteModeService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -82,10 +81,6 @@ final class HeroResolver
             ->where('hero_eligible', true)
             ->whereNull('deleted_at');
 
-        if (SiteModeService::isLive()) {
-            $query->where('is_demo', false);
-        }
-
         $news = $query->orderByDesc('published_at')->orderByDesc('id')->first();
 
         if ($news === null) {
@@ -102,10 +97,6 @@ final class HeroResolver
             ->whereNotNull('published_at')
             ->where('published_at', '<=', CarbonImmutable::now())
             ->whereNull('deleted_at');
-
-        if (SiteModeService::isLive()) {
-            $query->where('is_demo', false);
-        }
 
         $news = $query->orderByDesc('published_at')->orderByDesc('id')->first();
 

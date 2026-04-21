@@ -12,6 +12,7 @@ class LegendController extends Controller
         $items = Legend::query()
             ->with('coverMedia')
             ->whereNull('deleted_at')
+            ->where('is_published', true)
             ->orderBy('name')
             ->paginate(12);
 
@@ -28,6 +29,7 @@ class LegendController extends Controller
             ->with('coverMedia')
             ->where('slug', $slug)
             ->whereNull('deleted_at')
+            ->where('is_published', true)
             ->firstOrFail();
 
         return view('pages.miras.legends.show', [

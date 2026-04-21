@@ -43,6 +43,8 @@ class EditNews extends EditRecord
 
     protected bool $pendingRemoveGallery = false;
 
+    protected bool $pendingWatermarkEnabled = false;
+
     protected function mutateFormDataBeforeSave(array $data): array
     {
         if (auth()->user()?->role === 'editor') {
@@ -70,9 +72,8 @@ class EditNews extends EditRecord
             ? (int) $data['existing_video_media_id']
             : null;
 
-        $this->pendingRemoveCover = (bool) ($data['remove_cover'] ?? false);
-        $this->pendingRemoveVideo = (bool) ($data['remove_video'] ?? false);
         $this->pendingRemoveGallery = (bool) ($data['remove_gallery'] ?? false);
+        $this->pendingWatermarkEnabled = (bool) ($data['watermark_enabled'] ?? false);
 
         unset($data['cover_upload']);
         unset($data['existing_cover_media_id']);
@@ -80,9 +81,9 @@ class EditNews extends EditRecord
         unset($data['existing_gallery_media_ids']);
         unset($data['video_url']);
         unset($data['existing_video_media_id']);
-        unset($data['remove_cover']);
         unset($data['remove_video']);
         unset($data['remove_gallery']);
+        unset($data['watermark_enabled']);
 
         return $data;
     }
@@ -107,8 +108,13 @@ class EditNews extends EditRecord
                 ],
                 [
                     'title_override' => $this->record->title,
+                    'watermark_enabled' => $this->pendingWatermarkEnabled,
                 ]
             );
+
+            if ($this->pendingWatermarkEnabled) {
+                \App\Support\Media\WatermarkGenerator::generate($media);
+            }
         } elseif ($this->pendingRemoveCover) {
             $existingCoverIds = $this->record->media()
                 ->wherePivot('usage_type', 'cover')
@@ -130,13 +136,38 @@ class EditNews extends EditRecord
                 'cover',
                 [
                     'title_override' => $this->record->title,
+                    'watermark_enabled' => $this->pendingWatermarkEnabled,
                 ]
             );
+
+            if ($this->pendingWatermarkEnabled) {
+                $media = \App\Models\Media::find($this->pendingExistingCoverMediaId);
+                if ($media) {
+                    \App\Support\Media\WatermarkGenerator::generate($media);
+                }
+            }
 
             Notification::make()
                 ->title('Kapak medya havuzundan seçildi.')
                 ->success()
                 ->send();
+        } else {
+            // Check if toggle changed for EXISTING cover (no new upload or selection)
+            $cover = $this->record->primaryCover()->first();
+            if ($cover && $cover->pivot->watermark_enabled !== $this->pendingWatermarkEnabled) {
+                $this->record->media()->updateExistingPivot($cover->id, [
+                    'watermark_enabled' => $this->pendingWatermarkEnabled
+                ]);
+                
+                if ($this->pendingWatermarkEnabled) {
+                    \App\Support\Media\WatermarkGenerator::generate($cover);
+                }
+
+                Notification::make()
+                    ->title($this->pendingWatermarkEnabled ? 'Watermark uygulandı.' : 'Watermark kaldırıldı.')
+                    ->success()
+                    ->send();
+            }
         }
 
         // VIDEO

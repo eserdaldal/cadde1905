@@ -24,6 +24,18 @@ class TimelinePageService
 
     public function getFilterOptions(): array
     {
-        return TimelineEntry::typeOptions();
+        $availableTypes = TimelineEntry::query()
+            ->visible()
+            ->whereNotNull('timeline_date')
+            ->select('type')
+            ->distinct()
+            ->pluck('type')
+            ->all();
+
+        return array_filter(
+            TimelineEntry::typeOptions(),
+            fn (string $label, string $type) => in_array($type, $availableTypes, true),
+            ARRAY_FILTER_USE_BOTH
+        );
     }
 }

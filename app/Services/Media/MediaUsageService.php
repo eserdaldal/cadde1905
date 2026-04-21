@@ -78,6 +78,26 @@ class MediaUsageService
 
             if (Storage::disk($disk)->exists($media->path)) {
                 Storage::disk($disk)->delete($media->path);
+                
+                // [NEW] Cleanup Derived Files (Thumb, WebP)
+                $dir = dirname($media->path);
+                $uuid = $media->uuid;
+                $derivedDir = $dir . '/derived';
+                
+                if (Storage::disk($disk)->exists($derivedDir)) {
+                    // Delete specific derived files for this UUID
+                    $files = Storage::disk($disk)->files($derivedDir);
+                    foreach ($files as $file) {
+                        if (str_contains(basename($file), $uuid . '__')) {
+                            Storage::disk($disk)->delete($file);
+                        }
+                    }
+                    
+                    // Optionally delete derived directory if empty
+                    if (empty(Storage::disk($disk)->files($derivedDir))) {
+                        Storage::disk($disk)->deleteDirectory($derivedDir);
+                    }
+                }
             }
         }
 

@@ -43,6 +43,228 @@ final class ApiFootballService
     }
 
     /**
+     * @return array<string, mixed>|null
+     */
+    public function getFixtureDetail(int $fixtureId): ?array
+    {
+        if ($fixtureId <= 0) {
+            return null;
+        }
+
+        $payload = $this->client->get('/fixtures', [
+            'id' => $fixtureId,
+        ]);
+
+        $response = $payload['response'] ?? null;
+
+        if (! is_array($response) || $response === []) {
+            return null;
+        }
+
+        $fixture = $response[0] ?? null;
+
+        if (! is_array($fixture)) {
+            return null;
+        }
+
+        $normalized = $this->normalizeFixture($fixture);
+
+        $goals = is_array($fixture['goals'] ?? null) ? $fixture['goals'] : [];
+        $score = is_array($fixture['score'] ?? null) ? $fixture['score'] : [];
+        $teams = is_array($fixture['teams'] ?? null) ? $fixture['teams'] : [];
+
+        $homeGoals = $goals['home'] ?? null;
+        $awayGoals = $goals['away'] ?? null;
+
+        $normalized['referee'] = (string) (($fixture['fixture']['referee'] ?? '') ?: '');
+        $normalized['home_goals'] = is_numeric($homeGoals) ? (int) $homeGoals : null;
+        $normalized['away_goals'] = is_numeric($awayGoals) ? (int) $awayGoals : null;
+        $normalized['score'] = $this->buildScore($homeGoals, $awayGoals);
+        $normalized['league_round'] = (string) (($fixture['league']['round'] ?? '') ?: '');
+        $normalized['home_winner'] = (bool) (($teams['home']['winner'] ?? false));
+        $normalized['away_winner'] = (bool) (($teams['away']['winner'] ?? false));
+        $normalized['halftime_score'] = $this->buildScore(
+            $score['halftime']['home'] ?? null,
+            $score['halftime']['away'] ?? null,
+        );
+        $normalized['fulltime_score'] = $this->buildScore(
+            $score['fulltime']['home'] ?? null,
+            $score['fulltime']['away'] ?? null,
+        );
+
+        return $normalized;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getFixtureLineups(int $fixtureId): array
+    {
+        if ($fixtureId <= 0) {
+            return [];
+        }
+
+        $payload = $this->client->get('/fixtures/lineups', [
+            'fixture' => $fixtureId,
+        ]);
+
+        $response = $payload['response'] ?? null;
+
+        if (! is_array($response) || $response === []) {
+            return [];
+        }
+
+        $items = [];
+
+        foreach ($response as $lineup) {
+            if (! is_array($lineup)) {
+                continue;
+            }
+
+            $team = is_array($lineup['team'] ?? null) ? $lineup['team'] : [];
+            $coach = is_array($lineup['coach'] ?? null) ? $lineup['coach'] : [];
+            $colors = is_array($team['colors'] ?? null) ? $team['colors'] : [];
+            $playerColors = is_array($colors['player'] ?? null) ? $colors['player'] : [];
+            $goalkeeperColors = is_array($colors['goalkeeper'] ?? null) ? $colors['goalkeeper'] : [];
+
+            $items[] = [
+                'team' => [
+                    'id' => (int) ($team['id'] ?? 0),
+                    'name' => (string) ($team['name'] ?? ''),
+                    'logo' => (string) ($team['logo'] ?? ''),
+                    'colors' => [
+                        'player' => [
+                            'primary' => $this->normalizeHexColor($playerColors['primary'] ?? null),
+                            'number' => $this->normalizeHexColor($playerColors['number'] ?? null),
+                            'border' => $this->normalizeHexColor($playerColors['border'] ?? null),
+                        ],
+                        'goalkeeper' => [
+                            'primary' => $this->normalizeHexColor($goalkeeperColors['primary'] ?? null),
+                            'number' => $this->normalizeHexColor($goalkeeperColors['number'] ?? null),
+                            'border' => $this->normalizeHexColor($goalkeeperColors['border'] ?? null),
+                        ],
+                    ],
+                ],
+                'coach' => [
+                    'id' => (int) ($coach['id'] ?? 0),
+                    'name' => (string) ($coach['name'] ?? ''),
+                    'photo' => (string) ($coach['photo'] ?? ''),
+                ],
+                'formation' => (string) ($lineup['formation'] ?? ''),
+                'start_xi' => $this->normalizeLineupPlayers($lineup['startXI'] ?? []),
+                'substitutes' => $this->normalizeLineupPlayers($lineup['substitutes'] ?? []),
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getFixtureEvents(int $fixtureId): array
+    {
+        if ($fixtureId <= 0) {
+            return [];
+        }
+
+        $payload = $this->client->get('/fixtures/events', [
+            'fixture' => $fixtureId,
+        ]);
+
+        $response = $payload['response'] ?? null;
+
+        if (! is_array($response) || $response === []) {
+            return [];
+        }
+
+        $items = [];
+
+        foreach ($response as $event) {
+            if (! is_array($event)) {
+                continue;
+            }
+
+            $time = is_array($event['time'] ?? null) ? $event['time'] : [];
+            $team = is_array($event['team'] ?? null) ? $event['team'] : [];
+            $player = is_array($event['player'] ?? null) ? $event['player'] : [];
+            $assist = is_array($event['assist'] ?? null) ? $event['assist'] : [];
+
+            $items[] = [
+                'minute' => (int) ($time['elapsed'] ?? 0),
+                'extra' => is_numeric($time['extra'] ?? null) ? (int) $time['extra'] : null,
+                'team_id' => (int) ($team['id'] ?? 0),
+                'team_name' => (string) ($team['name'] ?? ''),
+                'team_logo' => (string) ($team['logo'] ?? ''),
+                'player_id' => (int) ($player['id'] ?? 0),
+                'player_name' => (string) ($player['name'] ?? ''),
+                'assist_id' => (int) ($assist['id'] ?? 0),
+                'assist_name' => (string) ($assist['name'] ?? ''),
+                'type' => $this->normalizeEventType((string) ($event['type'] ?? '')),
+                'detail' => (string) ($event['detail'] ?? ''),
+                'comments' => $event['comments'] ?? null,
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getFixtureStatistics(int $fixtureId): array
+    {
+        if ($fixtureId <= 0) {
+            return [];
+        }
+
+        $payload = $this->client->get('/fixtures/statistics', [
+            'fixture' => $fixtureId,
+        ]);
+
+        $response = $payload['response'] ?? null;
+
+        if (! is_array($response) || $response === []) {
+            return [];
+        }
+
+        $items = [];
+
+        foreach ($response as $teamStats) {
+            if (! is_array($teamStats)) {
+                continue;
+            }
+
+            $team = is_array($teamStats['team'] ?? null) ? $teamStats['team'] : [];
+            $stats = $teamStats['statistics'] ?? [];
+
+            $normalizedStats = [];
+
+            if (is_array($stats)) {
+                foreach ($stats as $row) {
+                    if (! is_array($row)) {
+                        continue;
+                    }
+
+                    $normalizedStats[] = [
+                        'type' => (string) ($row['type'] ?? ''),
+                        'value' => $row['value'] ?? null,
+                    ];
+                }
+            }
+
+            $items[] = [
+                'team_id' => (int) ($team['id'] ?? 0),
+                'team_name' => (string) ($team['name'] ?? ''),
+                'team_logo' => (string) ($team['logo'] ?? ''),
+                'items' => $normalizedStats,
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
      * @return array<int, array<string, mixed>>
      */
     public function getLeagueStandings(?int $leagueId = null, ?int $season = null, int $limit = 10): array
@@ -238,6 +460,84 @@ final class ApiFootballService
         ];
     }
 
+    /**
+     * @param mixed $players
+     * @return array<int, array<string, mixed>>
+     */
+    private function normalizeLineupPlayers(mixed $players): array
+    {
+        if (! is_array($players)) {
+            return [];
+        }
+
+        $items = [];
+
+        foreach ($players as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $player = is_array($row['player'] ?? null) ? $row['player'] : [];
+            $grid = (string) ($player['grid'] ?? '');
+
+            [$gridRow, $gridCol] = $this->parseGrid($grid);
+
+            $items[] = [
+                'player_id' => (int) ($player['id'] ?? 0),
+                'name' => (string) ($player['name'] ?? ''),
+                'number' => is_numeric($player['number'] ?? null) ? (int) $player['number'] : null,
+                'pos' => (string) ($player['pos'] ?? ''),
+                'grid' => $grid,
+                'grid_row' => $gridRow,
+                'grid_col' => $gridCol,
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * @return array{0:int|null,1:int|null}
+     */
+    private function parseGrid(string $grid): array
+    {
+        if ($grid === '' || ! str_contains($grid, ':')) {
+            return [null, null];
+        }
+
+        [$row, $col] = explode(':', $grid, 2);
+
+        return [
+            is_numeric($row) ? (int) $row : null,
+            is_numeric($col) ? (int) $col : null,
+        ];
+    }
+
+    private function normalizeHexColor(mixed $value): ?string
+    {
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        $normalized = ltrim(trim($value), '#');
+
+        if ($normalized === '' || ! ctype_xdigit($normalized)) {
+            return null;
+        }
+
+        return '#' . strtolower($normalized);
+    }
+
+    private function normalizeEventType(string $type): string
+    {
+        return match (strtolower(trim($type))) {
+            'goal' => 'goal',
+            'card' => 'card',
+            'subst' => 'substitution',
+            default => strtolower(trim($type)),
+        };
+    }
+
     private function buildScore(mixed $homeGoals, mixed $awayGoals): ?string
     {
         if (! is_numeric($homeGoals) || ! is_numeric($awayGoals)) {
@@ -249,7 +549,7 @@ final class ApiFootballService
 
     private function buildFixtureDetailUrl(int $fixtureId): string
     {
-        return '/mac';
+        return '/mac/' . $fixtureId;
     }
 
     private function resolveResult(array $fixture, int $teamId, mixed $homeGoals, mixed $awayGoals): ?string

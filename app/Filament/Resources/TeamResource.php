@@ -6,14 +6,14 @@ use App\Filament\Resources\TeamResource\Pages;
 use App\Models\WorldCup\Team;
 use App\Models\WorldCup\WorldCup;
 use Filament\Forms;
-use Filament\Forms\Get;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Unique;
 
 class TeamResource extends Resource
@@ -83,7 +83,9 @@ class TeamResource extends Resource
                                     Forms\Components\Select::make('group_id')
                                         ->label('Grup')
                                         ->relationship('group', 'code')
-                                        ->getOptionLabelFromRecordUsing(fn ($record) => $record->code . ($record->name ? ' — ' . $record->name : ''))
+                                        ->getOptionLabelFromRecordUsing(
+                                            fn ($record) => $record->code . ($record->name ? ' — ' . $record->name : '')
+                                        )
                                         ->searchable()
                                         ->preload()
                                         ->nullable()
@@ -268,39 +270,69 @@ class TeamResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('flag_url')
+                Tables\Columns\ImageColumn::make('flag_image_api')
                     ->label('Bayrak')
-                    ->circular()
-                    ->disk('public'),
-                Tables\Columns\TextColumn::make('name_override')
-                    ->label('Ad')
-                    ->formatStateUsing(fn (?string $state, Team $record) => $state ?: $record->name_api)
-                    ->searchable()
+                    ->circular(),
+
+                Tables\Columns\TextColumn::make('name_display')
+                    ->label('Takım')
+                    ->getStateUsing(fn (Team $record) => $record->name_override ?: $record->name_api)
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->where(function (Builder $q) use ($search) {
+                            $q->where('name_override', 'like', "%{$search}%")
+                              ->orWhere('name_api', 'like', "%{$search}%")
+                              ->orWhere('short_name_override', 'like', "%{$search}%")
+                              ->orWhere('short_name_api', 'like', "%{$search}%")
+                              ->orWhere('fifa_code', 'like', "%{$search}%");
+                        });
+                    })
+                    ->sortable(query: function (Builder $query, string $direction): Builder {
+                        return $query
+                            ->orderByRaw("COALESCE(name_override, name_api) {$direction}");
+                    }),
+
+                Tables\Columns\TextColumn::make('fifa_code')
+                    ->label('FIFA')
+                    ->badge()
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('group.code')
+                    ->label('Grup')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('slug')->label('Slug')->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('group.code')->label('Grup')->placeholder('—'),
-                Tables\Columns\TextColumn::make('confederation')->label('Konfederasyon')->placeholder('—'),
-                Tables\Columns\IconColumn::make('is_featured')->label('Öne Çıkan')->boolean(),
-                Tables\Columns\IconColumn::make('featured_lock')->label('Lock')->boolean()->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('is_visible')->label('Görünür')->boolean()->trueColor('success')->falseColor('gray'),
-                Tables\Columns\TextColumn::make('sort_order')->label('Sıra')->sortable(),
+
+                Tables\Columns\TextColumn::make('confederation')
+                    ->label('Konf.')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\IconColumn::make('is_featured')
+                    ->label('Öne Çıkan')
+                    ->boolean(),
+
+                Tables\Columns\IconColumn::make('is_visible')
+                    ->label('Görünür')
+                    ->boolean(),
+
+                Tables\Columns\TextColumn::make('sort_order')
+                    ->label('Sıra')
+                    ->sortable(),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_visible')->label('Görünür'),
-                Tables\Filters\TernaryFilter::make('is_featured')->label('Öne Çıkan'),
-                Tables\Filters\TernaryFilter::make('featured_lock')->label('Featured Lock'),
-                Tables\Filters\SelectFilter::make('tournament_id')
-                    ->label('Turnuva')
-                    ->relationship('worldCup', 'year'),
-                Tables\Filters\SelectFilter::make('group_id')
-                    ->label('Grup')
-                    ->relationship('group', 'code'),
+                Tables\Filters\TernaryFilter::make('is_visible')
+                    ->label('Görünür'),
+
+                Tables\Filters\TernaryFilter::make('is_featured')
+                    ->label('Öne Çıkan'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([])
             ->defaultSort('sort_order');
+    }
+
+    public static function getRelations(): array
+    {
+        return [];
     }
 
     public static function getPages(): array

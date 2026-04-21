@@ -25,6 +25,19 @@ class Legend extends Model
         'content',
         'era_start_year',
         'era_end_year',
+        'is_published',
+        'published_at',
+        'importance_score',
+        'is_featured',
+        'is_demo',
+    ];
+
+    protected $casts = [
+        'published_at' => 'datetime',
+        'importance_score' => 'integer',
+        'is_featured' => 'boolean',
+        'is_published' => 'boolean',
+        'is_demo' => 'boolean',
     ];
 
     protected $appends = [

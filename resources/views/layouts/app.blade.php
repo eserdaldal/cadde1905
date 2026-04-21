@@ -30,6 +30,14 @@
         } catch (\Throwable $e) {
             $siteThemeMode = 'dark';
         }
+
+        $isWorldCupPage = request()->routeIs('worldcup.*');
+        $isEngelsizPage = request()->routeIs('engelsiz-aslanlar.*');
+        $isMirasPage = request()->routeIs('miras.*');
+        $isTimelinePage = request()->routeIs('timeline.*');
+        $isMatchDetailPage = request()->routeIs('match.detail');
+        $isFullBleedPage = $isWorldCupPage || $isEngelsizPage;
+        $isSidebarHiddenPage = $isFullBleedPage || $isMirasPage || $isTimelinePage || $isMatchDetailPage;
     @endphp
 
     <script>
@@ -78,6 +86,7 @@
     </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('css/layout-overrides.css') }}">
     @stack('styles')
 </head>
 
@@ -85,17 +94,17 @@
     @include('partials.header')
     @include('components.mobile-drawer')
 
-    <main class="page {{ request()->routeIs('worldcup.*') ? 'is-worldcup' : '' }}">
+    <main class="page {{ $isFullBleedPage ? 'is-worldcup' : '' }} {{ $isSidebarHiddenPage ? 'is-sidebarless' : '' }}">
         @hasSection('page-header')
             <div class="page-header">
                 @yield('page-header')
             </div>
         @endif
-        <div class="main-grid {{ request()->routeIs('worldcup.*') ? 'is-worldcup' : '' }}">
+        <div class="main-grid {{ $isFullBleedPage ? 'is-worldcup' : '' }} {{ $isSidebarHiddenPage ? 'is-sidebarless' : '' }}">
             <div class="content-area min-w-0">
                 @yield('content')
             </div>
-            @if(!request()->routeIs('worldcup.*'))
+            @if(! $isSidebarHiddenPage)
                 <aside class="sidebar-area">
                     @include('components.sidebar')
                 </aside>

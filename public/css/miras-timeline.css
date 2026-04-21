@@ -1,0 +1,339 @@
+/* ══════════════════════════════════════
+   MIRAS TIMELINE — MUSEUM OVERRIDES
+══════════════════════════════════════ */
+.miras-hero {
+    padding: 48px 40px 46px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    min-height: 180px;
+}
+
+.miras-hero-content {
+    max-width: 760px;
+}
+
+.miras-hero-media {
+    width: 100%;
+    max-width: 560px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    box-shadow: 0 18px 34px rgba(var(--bg-rgb), 0.35);
+    display: block;
+    margin-bottom: 18px;
+}
+
+.miras-hero-caption {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--muted);
+}
+
+@media (max-width: 768px) {
+    .miras-hero {
+        padding: 28px 20px 26px;
+        min-height: auto;
+    }
+
+    .miras-hero-content {
+        max-width: 100%;
+    }
+
+    .miras-hero-media {
+        max-width: 100%;
+        margin-bottom: 14px;
+    }
+
+    .miras-hero-caption {
+        font-size: 14px;
+    }
+}
+
+.miras-timeline {
+    position: relative;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 24px 0 18px;
+    --timeline-card-width: calc(50% - 42px);
+    --timeline-card-min: 300px;
+    --timeline-card-max: 560px;
+    --timeline-dot-size: 24px;
+    --timeline-dot-top: 34px;
+    --timeline-line-top: 6px;
+    --timeline-line-bottom: 6px;
+    --timeline-connector-width: calc(50% - var(--timeline-card-width) - 10px);
+    --timeline-connector-top: calc(var(--timeline-dot-top) + (var(--timeline-dot-size) / 2));
+}
+
+.miras-timeline__line {
+    position: absolute;
+    left: 50%;
+    top: var(--timeline-line-top);
+    bottom: var(--timeline-line-bottom);
+    width: 3px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, transparent 0%, var(--museum-timeline-line) 16%, var(--museum-timeline-line) 84%, transparent 100%);
+    box-shadow: 0 0 26px var(--museum-timeline-line-glow);
+    z-index: 0;
+}
+
+.miras-timeline__item {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 38px;
+}
+
+.miras-timeline__item:last-child {
+    margin-bottom: 12px;
+}
+
+.miras-timeline__item.left {
+    justify-content: flex-start;
+    text-align: right;
+}
+
+.miras-timeline__item.right {
+    justify-content: flex-end;
+    text-align: left;
+}
+
+.miras-timeline__dot {
+    display: none;
+}
+
+.miras-timeline__dot::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: var(--museum-timeline-node-core);
+}
+
+.miras-timeline__connector {
+    display: none;
+    position: absolute;
+    top: var(--timeline-connector-top);
+    left: 50%;
+    right: auto;
+    height: 2px;
+    width: var(--timeline-connector-width);
+    min-width: 36px;
+    max-width: 120px;
+    background: linear-gradient(90deg, var(--museum-timeline-node), transparent);
+    transition: width 0.2s ease, box-shadow 0.2s ease;
+    z-index: 1;
+}
+
+.miras-timeline__item.left .miras-timeline__connector {
+    display: none;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, var(--museum-timeline-node));
+}
+
+.miras-timeline__item.right .miras-timeline__connector {
+    display: none;
+    transform: none;
+}
+
+.miras-timeline__card {
+    position: relative;
+    display: block;
+    width: var(--timeline-card-width);
+    min-width: var(--timeline-card-min);
+    max-width: var(--timeline-card-max);
+    text-decoration: none;
+    padding: 26px 28px;
+    border-radius: 24px;
+    background: var(--museum-timeline-surface);
+    border: 1px solid var(--museum-timeline-border);
+    box-shadow: var(--museum-timeline-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    z-index: 3;
+}
+
+.miras-timeline__card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+}
+
+.miras-timeline__item:hover .miras-timeline__card {
+    transform: translateY(-6px);
+    border-color: var(--museum-timeline-accent);
+    background: var(--museum-timeline-surface-hover);
+    box-shadow: 0 30px 64px rgba(0, 0, 0, 0.42);
+}
+
+.miras-timeline__item:hover .miras-timeline__dot {
+    transform: translateX(-50%) scale(1.08);
+    background: var(--museum-timeline-node);
+    border-color: var(--museum-timeline-node-core);
+    box-shadow: 0 0 0 6px rgba(252, 184, 22, 0.18), 0 0 24px rgba(169, 29, 53, 0.26);
+}
+
+.miras-timeline__item:hover .miras-timeline__connector {
+    display: none;
+    width: calc(var(--timeline-connector-width) + 8px);
+    box-shadow: 0 0 12px var(--museum-timeline-line-glow);
+}
+
+.miras-timeline__year {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 26px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--museum-timeline-year), rgba(169, 29, 53, 0.35));
+    border: 1px solid rgba(212, 175, 55, 0.7);
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+
+[data-theme="light"] .miras-timeline__year {
+    border-color: rgba(184, 138, 19, 0.55);
+    box-shadow: 0 10px 22px rgba(32, 28, 23, 0.12);
+}
+
+.miras-timeline__meta {
+    margin-top: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.miras-timeline__separator {
+    opacity: 0.6;
+}
+
+.miras-timeline__title {
+    margin-top: 12px;
+    font-size: 21px;
+    font-weight: 900;
+    color: var(--text);
+}
+
+.miras-timeline__excerpt {
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--muted);
+}
+
+.miras-timeline__cta {
+    margin-top: 16px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--museum-timeline-accent);
+}
+
+.miras-timeline__item:hover .miras-timeline__cta {
+    color: var(--museum-timeline-gold);
+}
+
+.miras-timeline__empty {
+    padding: 26px;
+    border-radius: 22px;
+    border: 1px dashed var(--museum-timeline-border);
+    background: var(--museum-timeline-surface);
+    text-align: center;
+    color: var(--muted);
+}
+
+.miras-timeline--compact {
+    max-width: 960px;
+    --timeline-card-width: 100%;
+    --timeline-card-min: 0px;
+    --timeline-card-max: 720px;
+    --timeline-dot-top: 34px;
+    --timeline-line-top: 14px;
+    --timeline-line-bottom: 14px;
+    --timeline-connector-width: 24px;
+}
+
+.miras-timeline--compact .miras-timeline__line {
+    left: 28px;
+    transform: none;
+}
+
+.miras-timeline--compact .miras-timeline__item {
+    justify-content: flex-start;
+    text-align: left;
+    margin-bottom: 24px;
+    padding-left: 72px;
+}
+
+.miras-timeline--compact .miras-timeline__card {
+    width: 100%;
+    max-width: 720px;
+}
+
+.miras-timeline--compact .miras-timeline__dot {
+    left: 28px;
+    transform: translateX(-50%);
+}
+
+.miras-timeline--compact .miras-timeline__connector {
+    display: none;
+    left: 28px;
+    transform: none;
+    width: 24px;
+}
+
+@media (max-width: 992px) {
+    .miras-timeline {
+        --timeline-card-width: 100%;
+        --timeline-card-min: 0px;
+        --timeline-card-max: 720px;
+        --timeline-dot-top: 34px;
+        --timeline-line-top: 14px;
+        --timeline-line-bottom: 14px;
+        --timeline-connector-width: 24px;
+    }
+
+    .miras-timeline__line {
+        left: 28px;
+        transform: none;
+    }
+
+    .miras-timeline__item {
+        justify-content: flex-start;
+        text-align: left;
+        padding-left: 72px;
+        margin-bottom: 24px;
+    }
+
+    .miras-timeline__card {
+        width: 100%;
+        max-width: 720px;
+    }
+
+    .miras-timeline__dot {
+        left: 28px;
+        transform: translateX(-50%);
+    }
+
+    .miras-timeline__connector {
+        display: none;
+        left: 28px;
+        transform: none;
+        width: 24px;
+        background: linear-gradient(90deg, var(--museum-timeline-node), transparent);
+    }
+}

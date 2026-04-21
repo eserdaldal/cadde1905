@@ -19,10 +19,12 @@ class Mediaable extends Model
         'sort_order',
         'is_primary',
         'title_override',
+        'watermark_enabled',
     ];
 
     protected $casts = [
         'sort_order' => 'integer',
         'is_primary' => 'boolean',
+        'watermark_enabled' => 'boolean',
     ];
 }

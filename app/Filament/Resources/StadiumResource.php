@@ -6,15 +6,16 @@ use App\Filament\Resources\StadiumResource\Pages;
 use App\Models\WorldCup\Stadium;
 use App\Models\WorldCup\WorldCup;
 use Filament\Forms;
-use Filament\Forms\Get;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules\Unique;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Unique;
 
 class StadiumResource extends Resource
 {
@@ -30,6 +31,7 @@ class StadiumResource extends Resource
     public static function canViewAny(): bool
     {
         $user = Auth::user();
+
         return (bool) ($user?->isSuperAdmin() || $user?->isAdmin());
     }
 
@@ -39,6 +41,15 @@ class StadiumResource extends Resource
 
         return parent::getEloquentQuery()
             ->when($activeId, fn ($q) => $q->where('tournament_id', $activeId));
+    }
+
+    protected static function resolveUploadSlug(Get $get, ?Stadium $record = null): string
+    {
+        $slug = $get('slug')
+            ?: $record?->slug
+            ?: Str::slug((string) ($get('name_override') ?: $get('name_api') ?: 'stadium'));
+
+        return $slug !== '' ? $slug : 'stadium';
     }
 
     public static function form(Form $form): Form
@@ -117,17 +128,17 @@ class StadiumResource extends Resource
 
                                     Forms\Components\FileUpload::make('hero_image')
                                         ->label('Kapak')
-                                        ->directory('stadiums/hero')
+                                        ->directory(fn (Get $get, ?Stadium $record) => 'stadiums/' . static::resolveUploadSlug($get, $record) . '/hero')
                                         ->image(),
 
                                     Forms\Components\FileUpload::make('seating_plan_image')
                                         ->label('Oturma Planı')
-                                        ->directory('stadiums/seating')
+                                        ->directory(fn (Get $get, ?Stadium $record) => 'stadiums/' . static::resolveUploadSlug($get, $record) . '/seating')
                                         ->image(),
 
                                     Forms\Components\FileUpload::make('gallery')
                                         ->label('Galeri')
-                                        ->directory('stadiums/gallery')
+                                        ->directory(fn (Get $get, ?Stadium $record) => 'stadiums/' . static::resolveUploadSlug($get, $record) . '/gallery')
                                         ->image()
                                         ->multiple()
                                         ->reorderable()
@@ -190,7 +201,8 @@ class StadiumResource extends Resource
                     ->formatStateUsing(fn (?string $state, Stadium $record) => $state ?: $record->name_api)
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('city_api')->label('Şehir'),
+                Tables\Columns\TextColumn::make('city_api')
+                    ->label('Şehir'),
 
                 Tables\Columns\TextColumn::make('display_capacity')
                     ->label('Kapasite')
@@ -200,12 +212,20 @@ class StadiumResource extends Resource
                     ->label('Alias')
                     ->counts('aliases'),
 
-                Tables\Columns\IconColumn::make('is_featured')->label('Öne Çıkan')->boolean(),
-                Tables\Columns\IconColumn::make('is_visible')->label('Görünür')->boolean(),
+                Tables\Columns\IconColumn::make('is_featured')
+                    ->label('Öne Çıkan')
+                    ->boolean(),
+
+                Tables\Columns\IconColumn::make('is_visible')
+                    ->label('Görünür')
+                    ->boolean(),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_visible')->label('Görünür'),
-                Tables\Filters\TernaryFilter::make('is_featured')->label('Öne Çıkan'),
+                Tables\Filters\TernaryFilter::make('is_visible')
+                    ->label('Görünür'),
+
+                Tables\Filters\TernaryFilter::make('is_featured')
+                    ->label('Öne Çıkan'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

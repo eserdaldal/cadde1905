@@ -33,6 +33,8 @@ class CreateNews extends CreateRecord
 
     protected ?int $pendingExistingVideoMediaId = null;
 
+    protected bool $pendingWatermarkEnabled = false;
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (auth()->user()?->role === 'editor') {
@@ -60,6 +62,7 @@ class CreateNews extends CreateRecord
         $this->pendingExistingVideoMediaId = filled($data['existing_video_media_id'] ?? null)
             ? (int) $data['existing_video_media_id']
             : null;
+        $this->pendingWatermarkEnabled = (bool) ($data['watermark_enabled'] ?? false);
 
         unset($data['cover_upload']);
         unset($data['existing_cover_media_id']);
@@ -67,6 +70,7 @@ class CreateNews extends CreateRecord
         unset($data['existing_gallery_media_ids']);
         unset($data['video_url']);
         unset($data['existing_video_media_id']);
+        unset($data['watermark_enabled']);
 
         return $data;
     }
@@ -91,8 +95,13 @@ class CreateNews extends CreateRecord
                 ],
                 [
                     'title_override' => $this->record->title,
+                    'watermark_enabled' => $this->pendingWatermarkEnabled,
                 ]
             );
+
+            if ($this->pendingWatermarkEnabled) {
+                \App\Support\Media\WatermarkGenerator::generate($media);
+            }
         } elseif ($this->pendingExistingCoverMediaId) {
             $attachService->attachExistingToModel(
                 $this->record,
@@ -100,8 +109,16 @@ class CreateNews extends CreateRecord
                 'cover',
                 [
                     'title_override' => $this->record->title,
+                    'watermark_enabled' => $this->pendingWatermarkEnabled,
                 ]
             );
+
+            if ($this->pendingWatermarkEnabled) {
+                $media = \App\Models\Media::find($this->pendingExistingCoverMediaId);
+                if ($media) {
+                    \App\Support\Media\WatermarkGenerator::generate($media);
+                }
+            }
         }
 
         // VIDEO

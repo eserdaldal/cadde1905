@@ -71,13 +71,12 @@ class WorldCupStadiumService
         $matches = collect();
 
         if ($stadium) {
-            // FAZ 9: Optimasyon - Eager Loading ve Sıralama (kickoff_at)
             $matches = WorldCupMatch::query()
-                ->with(['homeTeam', 'awayTeam', 'stadium']) // Eager Load
+                ->with(['homeTeam', 'awayTeam', 'stadium'])
                 ->where('tournament_id', $stadium->tournament_id)
                 ->where('stadium_id', $stadium->id)
                 ->where('is_visible', true)
-                ->orderBy('kickoff_at', 'asc') // Tarihe göre sıralı
+                ->orderBy('kickoff_at', 'asc')
                 ->get();
         }
 
@@ -117,26 +116,43 @@ class WorldCupStadiumService
     private function mapStadiums(Collection $stadiums): array
     {
         return $stadiums->map(function (Stadium $stadium) {
+            $gallery = is_array($stadium->gallery) ? $stadium->gallery : [];
+
             return (object) [
                 'slug' => $stadium->slug,
                 'name' => $stadium->name_override ?: $stadium->name_api,
+                'name_override' => $stadium->name_override,
+                'name_api' => $stadium->name_api,
                 'city' => $stadium->city_api,
+                'city_api' => $stadium->city_api,
                 'country' => $stadium->country_api,
+                'country_api' => $stadium->country_api,
                 'capacity' => $stadium->display_capacity,
+                'capacity_override' => $stadium->capacity_override,
+                'hero_image' => $stadium->hero_image,
+                'gallery' => $gallery,
+                'image_url' => $stadium->image_override
+                    ?: $stadium->hero_image
+                    ?: (count($gallery) > 0 ? $gallery[0] : null),
             ];
         })->all();
     }
 
     private function mapStadium(Stadium $stadium): object
     {
-        // FAZ 9: Tüm yeni içerik alanları veri objesine ekleniyor
         return (object) [
             'slug' => $stadium->slug,
             'name' => $stadium->name_override ?: $stadium->name_api,
+            'name_override' => $stadium->name_override,
+            'name_api' => $stadium->name_api,
             'city' => $stadium->city_api,
+            'city_api' => $stadium->city_api,
             'country' => $stadium->country_api,
+            'country_api' => $stadium->country_api,
             'capacity' => $stadium->display_capacity,
+            'capacity_override' => $stadium->capacity_override,
             'description' => $stadium->description,
+            'description_editorial' => $stadium->description_editorial,
             'hero_image' => $stadium->hero_image,
             'seating_plan_image' => $stadium->seating_plan_image,
             'gallery' => is_array($stadium->gallery) ? $stadium->gallery : [],
@@ -145,7 +161,9 @@ class WorldCupStadiumService
             'surface_type' => $stadium->surface_type,
             'meta_title' => $stadium->meta_title,
             'meta_description' => $stadium->meta_description,
-            'image_url' => $stadium->image_override ?: (is_array($stadium->gallery) && count($stadium->gallery) > 0 ? $stadium->gallery[0] : null),
+            'image_url' => $stadium->image_override
+                ?: $stadium->hero_image
+                ?: (is_array($stadium->gallery) && count($stadium->gallery) > 0 ? $stadium->gallery[0] : null),
         ];
     }
 

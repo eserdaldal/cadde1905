@@ -6,6 +6,9 @@
 
 @section('title', $pageTitle ?? 'Galatasaray Tarihi - Kronoloji')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/timeline-page.css') }}">
+@endpush
 
 @section('content')
 <div class="kronoloji-wrap py-10 px-4 max-w-5xl mx-auto">
@@ -80,7 +83,7 @@
                         <div class="flex items-center gap-3">
                             <span class="type-badge">{{ $entry->type_label }}</span>
                             @if ($entry->source_label)
-                                <span class="type-badge" style="background:transparent; border-color: rgba(var(--text-rgb), 0.1); color: var(--muted);">
+                                <span class="type-badge type-badge--muted">
                                     {{ $entry->source_label }}
                                 </span>
                             @endif
@@ -102,8 +105,12 @@
 
         {{-- PAGINATION --}}
         <div class="mt-12">
-            {{ $entries->links() }}
+            {{ $entries->links('partials.timeline-pagination') }}
         </div>
     @endif
 </div>
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('js/timeline-page.js') }}" defer></script>
+@endpush

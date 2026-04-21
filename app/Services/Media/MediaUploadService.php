@@ -23,27 +23,97 @@ class MediaUploadService
         array $mediaData = [],
         array $pivotData = []
     ): Media {
-        $uuid = (string) Str::uuid();
-        $extension = $file->extension() ?: 'bin';
-
-        $path = $this->pathService->buildForModel(
-            $owner::class,
-            $uuid,
-            $extension
-        );
-
-        $disk = $mediaData['disk'] ?? 'public';
-        $directory = dirname($path);
-        $filename = basename($path);
+        $checksum = \App\Support\Media\ChecksumGenerator::generateForFile($file);
 
         DB::beginTransaction();
 
         try {
+            // Check for duplicate file by checksum
+            $existingMedia = Media::where('checksum', $checksum)->first();
+
+            if ($existingMedia) {
+                $usageType = $pivotData['usage_type'] ?? 'gallery';
+
+                // Check pivot duplication so we don't attach the exact same media usage twice
+                $alreadyAttached = $owner->media()
+                    ->where('media.id', $existingMedia->id)
+                    ->wherePivot('usage_type', $usageType)
+                    ->exists();
+
+                if (! $alreadyAttached) {
+                    $owner->media()->attach($existingMedia->id, [
+                        'usage_type' => $usageType,
+                        'sort_order' => $pivotData['sort_order'] ?? 0,
+                        'is_primary' => $pivotData['is_primary'] ?? false,
+                        'title_override' => $pivotData['title_override'] ?? null,
+                        'caption' => $pivotData['caption'] ?? null,
+                        'credit' => $pivotData['credit'] ?? null,
+                        'notes' => $pivotData['notes'] ?? null,
+                    ]);
+                }
+
+                DB::commit();
+
+                return $existingMedia;
+            }
+
+            // Normal Flow (Not exists)
+            $uuid = (string) Str::uuid();
+            $extension = mb_strtolower($file->extension() ?: 'bin');
+            $mimeType = $file->getClientMimeType();
+            $mediaKind = $mediaData['media_kind'] ?? 'image';
+
+            $originalTempPath = $file->getRealPath();
+            $processedPath = null;
+            $width = null;
+            $height = null;
+            $finalSize = $file->getSize();
+
+            // Image Processing Logic
+            $isRasterImage = in_array($extension, ['jpg', 'jpeg', 'png', 'webp']);
+            
+            if ($mediaKind === 'image' && $isRasterImage) {
+                $tempDir = storage_path('app/temp');
+                if (!is_dir($tempDir)) {
+                    mkdir($tempDir, 0755, true);
+                }
+                
+                $tempProcessedPath = $tempDir . '/' . $uuid . '.' . $extension;
+                
+                if (\App\Support\Media\ImageProcessor::process($originalTempPath, $tempProcessedPath, $extension)) {
+                    $processedPath = $tempProcessedPath;
+                    $dims = \App\Support\Media\ImageProcessor::getDimensions($processedPath);
+                    $width = $dims['width'] ?? null;
+                    $height = $dims['height'] ?? null;
+                    $finalSize = filesize($processedPath);
+                }
+            }
+
+            $path = $this->pathService->buildForModel(
+                $owner::class,
+                $uuid,
+                $extension
+            );
+
+            $disk = $mediaData['disk'] ?? 'public';
+            $directory = dirname($path);
+            $filename = basename($path);
+
             Storage::disk($disk)->makeDirectory($directory);
 
-            $storedPath = $file->storeAs($directory, $filename, [
-                'disk' => $disk,
-            ]);
+            if ($processedPath) {
+                // Store processed file
+                $storedPath = Storage::disk($disk)->putFileAs($directory, new \Illuminate\Http\File($processedPath), $filename);
+                // Clean up temp file
+                if (file_exists($processedPath)) {
+                    unlink($processedPath);
+                }
+            } else {
+                // Fallback to original
+                $storedPath = $file->storeAs($directory, $filename, [
+                    'disk' => $disk,
+                ]);
+            }
 
             if ($storedPath === false || $storedPath === null) {
                 throw new RuntimeException(sprintf(
@@ -57,22 +127,22 @@ class MediaUploadService
 
             $media = Media::create([
                 'uuid' => $uuid,
-                'media_kind' => $mediaData['media_kind'] ?? 'image',
+                'media_kind' => $mediaKind,
                 'storage_type' => $mediaData['storage_type'] ?? 'file',
                 'disk' => $disk,
                 'path' => $storedPath,
                 'original_name' => $file->getClientOriginalName(),
-                'extension' => mb_strtolower($extension),
-                'mime_type' => $file->getClientMimeType(),
-                'size' => $file->getSize(),
-                'width' => $mediaData['width'] ?? null,
-                'height' => $mediaData['height'] ?? null,
+                'extension' => $extension,
+                'mime_type' => $mimeType,
+                'size' => $finalSize,
+                'width' => $width,
+                'height' => $height,
                 'duration_seconds' => $mediaData['duration_seconds'] ?? null,
                 'embed_provider' => $mediaData['embed_provider'] ?? null,
                 'embed_url' => $mediaData['embed_url'] ?? null,
                 'poster_path' => $mediaData['poster_path'] ?? null,
                 'alt_text' => $mediaData['alt_text'] ?? null,
-                'checksum' => $mediaData['checksum'] ?? null,
+                'checksum' => $checksum,
                 'is_active' => $mediaData['is_active'] ?? true,
                 'created_by' => auth()->id() ?: null,
                 'updated_by' => auth()->id() ?: null,
@@ -88,13 +158,16 @@ class MediaUploadService
                 'notes' => $pivotData['notes'] ?? null,
             ]);
 
+            // [NEW] Generate Derived Images (Thumb, WebP)
+            \App\Support\Media\DerivedImageGenerator::generate($media);
+
             DB::commit();
 
             return $media;
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            if (Storage::disk($disk)->exists($path)) {
+            if (isset($disk) && isset($path) && Storage::disk($disk)->exists($path)) {
                 Storage::disk($disk)->delete($path);
             }
 

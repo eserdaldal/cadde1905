@@ -5,47 +5,23 @@
 @php
     $newsPlaceholder = asset('images/placeholders/news-placeholder.webp');
 
-    $imageUrl = function ($item) use ($newsPlaceholder) {
-        if (! $item) {
-            return $newsPlaceholder;
-        }
-
-        // CANONICAL-FIRST
-        if (method_exists($item, 'coverImageUrl')) {
-            $url = $item->coverImageUrl();
-            if (! empty($url)) {
-                return $url;
-            }
-        }
-
-        if (method_exists($item, 'coverMedia')) {
-            $media = $item->coverMedia()
-                ->orderByDesc('mediaables.is_primary')
-                ->orderBy('mediaables.sort_order')
-                ->orderByDesc('mediaables.id')
-                ->first();
-
-            if ($media && ! empty($media->url)) {
-                return $media->url;
-            }
-
-            if ($media && $media->path) {
-                return asset('storage/' . ltrim($media->path, '/'));
-            }
-        }
-
-        return $newsPlaceholder;
-    };
-
-    $getCategoryColor = function ($categoryName) {
-        $name = strtolower($categoryName ?? '');
-        return match(true) {
-            str_contains($name, 'futbol') => ['bg' => '#FCB816', 'text' => '#1a1a1a'],
-            str_contains($name, 'basketbol') => ['bg' => '#ff8c00', 'text' => '#ffffff'],
-            str_contains($name, 'voleybol') => ['bg' => '#2563eb', 'text' => '#ffffff'],
-            str_contains($name, 'genel') || str_contains($name, 'güncel') => ['bg' => '#52525b', 'text' => '#ffffff'],
-            default => ['bg' => '#A91D35', 'text' => '#ffffff']
+    $catBadge = function($category) {
+        $name = $category->name ?? 'HABER';
+        $slug = strtolower($name);
+        
+        $color = match(true) {
+            str_contains($slug, 'futbol') => '#FCB816',
+            str_contains($slug, 'basket') => '#FF8C00',
+            str_contains($slug, 'voley') => '#2563EB',
+            str_contains($slug, 'genel') || str_contains($slug, 'güncel') => '#52525B',
+            default => '#A91D35'
         };
+
+        // For bright colors like yellow, we might want dark text, handled via CSS logic later
+        return (object) [
+            'label' => mb_strtoupper($name, 'UTF-8'), 
+            'color' => $color
+        ];
     };
 @endphp
 
@@ -90,15 +66,33 @@
     }
     .cat-badge-v4 {
         position: absolute !important;
-        top: 8px !important;
-        left: 8px !important;
-        font-size: 10.5px !important;
-        font-weight: 600 !important;
-        padding: 2px 7px !important;
-        border-radius: 4px !important;
+        top: 10px !important;
+        left: 10px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        background: rgba(var(--white-rgb), 0.08) !important; /* Extremely soft light tint */
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        color: #fff !important;
+        font-size: 11px !important;
+        font-weight: 700 !important; /* Slightly lighter weight */
+        padding: 3px 10px !important;
+        border-radius: 8px !important; /* Friendlier corners */
         text-transform: uppercase !important;
-        letter-spacing: 0.5px !important;
+        letter-spacing: 0.08em !important;
         z-index: 10 !important;
+        box-shadow: 
+            0 4px 15px rgba(0, 0, 0, 0.15),
+            inset 0 0 0 1px var(--badge-color) !important; /* Thinner, softer luminous edge */
+        transition: all 0.3s ease !important;
+    }
+    .news-card:hover .cat-badge-v4 {
+        transform: translateY(-1px) scale(1.02) !important;
+        background: rgba(var(--white-rgb), 0.15) !important;
+        box-shadow: 
+            0 6px 20px rgba(0, 0, 0, 0.2),
+            inset 0 0 0 1.5px var(--badge-color) !important;
     }
     @media (max-width: 1024px) {
         .news-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -114,16 +108,15 @@
                     <div class="hero-news ui-hero" onclick="window.location.href='{{ route('news.show', $featured->slug) }}'">
                         <div class="hero-img">
                             <img
-                                src="{{ $imageUrl($featured) }}"
+                                src="{{ $featured->coverImageUrl() }}"
                                 alt="{{ $featured->title }}"
                                 loading="eager"
                                 onerror="this.onerror=null;this.src='{{ $newsPlaceholder }}';"
                             >
                             <div class="hero-img-overlay"></div>
-                            @php $c = $getCategoryColor($featured->category->name ?? 'GÜNCEL'); @endphp
-                            {{-- INLINE_OK: dynamic category colors --}}
-                            <span class="cat-badge-v4" style="top: 10px; left: 10px; background: {{ $c['bg'] }} !important; color: {{ $c['text'] }} !important;">
-                                {{ $featured->category->name ?? 'GÜNCEL' }}
+                            @php $b = $catBadge($featured->category ?? null); @endphp
+                            <span class="cat-badge-v4" style="--badge-color: {{ $b->color }}; top: 10px; left: 10px;">
+                                {{ $b->label }}
                             </span>
                         </div>
 
@@ -159,15 +152,16 @@
                             <a href="{{ route('news.show', $item->slug) }}" class="news-card ui-card block group transition-all duration-300 hover:-translate-y-1">
                                 <div class="nc-img rounded-t-lg">
                                     <img
-                                        src="{{ $imageUrl($item) }}"
+                                        src="{{ $item->coverThumbUrl() }}"
+                                        srcset="{{ $item->coverSrcset() }}"
+                                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                                         alt="{{ $item->title }}"
                                         loading="lazy"
                                         onerror="this.onerror=null;this.src='{{ $newsPlaceholder }}';"
                                     >
-                                    @php $c = $getCategoryColor($item->category->name ?? 'FUTBOL'); @endphp
-                                    {{-- INLINE_OK: dynamic category colors --}}
-                                    <span class="cat-badge-v4" style="background: {{ $c['bg'] }} !important; color: {{ $c['text'] }} !important;">
-                                        {{ $item->category->name ?? 'FUTBOL' }}
+                                    @php $b = $catBadge($item->category ?? null); @endphp
+                                    <span class="cat-badge-v4" style="--badge-color: {{ $b->color }};">
+                                        {{ $b->label }}
                                     </span>
                                 </div>
 

@@ -6,7 +6,6 @@ use App\Models\News;
 use App\Services\Homepage\ExclusionBag;
 use App\Services\Homepage\NormalizedContentItem;
 use App\Services\Homepage\Normalizers\NewsHomepageNormalizer;
-use App\Services\SiteModeService;
 use App\Support\ContentKey;
 use Carbon\CarbonImmutable;
 
@@ -29,10 +28,6 @@ final class LatestNewsBlockResolver
             ->whereNull('deleted_at')
             ->orderByDesc('published_at')
             ->orderByDesc('id');
-
-        if (SiteModeService::isLive()) {
-            $query->where('is_demo', false);
-        }
 
         $records = $query->get();
 

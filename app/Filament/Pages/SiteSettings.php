@@ -9,6 +9,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 class SiteSettings extends Page
@@ -25,11 +26,24 @@ class SiteSettings extends Page
 
     public string $site_mode = 'ghost';
     public string $theme_mode = 'dark';
+    public ?string $worldcup_stage = null;
+
+    /**
+     * @var array<int, array<string, mixed>>
+     */
+    public array $api_sync_actions = [];
+
+    /**
+     * @var array<string, string>
+     */
+    public array $worldcup_stage_options = [];
 
     public function mount(): void
     {
         $this->site_mode = SiteModeService::getMode();
         $this->theme_mode = $this->getThemeModeFromSettings();
+        $this->api_sync_actions = $this->getApiSyncActions();
+        $this->worldcup_stage_options = $this->getWorldCupStageOptions();
     }
 
     public function form(Form $form): Form
@@ -91,6 +105,157 @@ class SiteSettings extends Page
             ->title('Site ayarları güncellendi')
             ->success()
             ->send();
+    }
+
+    public function syncApi(string $key): void
+    {
+        $this->authorizeSync();
+
+        $action = $this->findApiSyncAction($key);
+
+        if ($action === null) {
+            Notification::make()
+                ->title('API sync aksiyonu bulunamadı')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        try {
+            $command = (string) $action['command'];
+            $params = (array) ($action['params'] ?? []);
+
+            Artisan::call($command, $params);
+            $output = trim(Artisan::output());
+
+            Notification::make()
+                ->title('Sync tamamlandı')
+                ->body($output !== '' ? $output : 'Komut başarıyla çalıştı.')
+                ->success()
+                ->send();
+        } catch (\Throwable $e) {
+            report($e);
+
+            Notification::make()
+                ->title('Sync başarısız')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
+    }
+
+    public function syncWorldCupFull(): void
+    {
+        $this->authorizeSync();
+
+        try {
+            Artisan::call('worldcup:sync');
+            $output = trim(Artisan::output());
+
+            Notification::make()
+                ->title('World Cup full sync tamamlandı')
+                ->body($output !== '' ? $output : 'Komut başarıyla çalıştı.')
+                ->success()
+                ->send();
+        } catch (\Throwable $e) {
+            report($e);
+
+            Notification::make()
+                ->title('World Cup sync başarısız')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
+    }
+
+    public function syncWorldCupStage(): void
+    {
+        $this->authorizeSync();
+
+        $stage = $this->worldcup_stage;
+
+        if ($stage === null || $stage === '' || ! array_key_exists($stage, $this->worldcup_stage_options)) {
+            Notification::make()
+                ->title('Stage seçilmedi')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        try {
+            Artisan::call('worldcup:sync', ['--stage' => $stage]);
+            $output = trim(Artisan::output());
+
+            Notification::make()
+                ->title('World Cup stage sync tamamlandı')
+                ->body($output !== '' ? $output : 'Komut başarıyla çalıştı.')
+                ->success()
+                ->send();
+        } catch (\Throwable $e) {
+            report($e);
+
+            Notification::make()
+                ->title('World Cup sync başarısız')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+        }
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function getApiSyncActions(): array
+    {
+        return [
+            [
+                'key' => 'sports_next_match',
+                'label' => 'Süper Lig — Sonraki Maç',
+                'command' => 'sports:sync-match-center',
+                'params' => [],
+            ],
+            [
+                'key' => 'sports_league_table',
+                'label' => 'Süper Lig — Lig Tablosu',
+                'command' => 'sports:sync-standings',
+                'params' => [],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function getWorldCupStageOptions(): array
+    {
+        return [
+            'tournament' => 'tournament',
+            'teams' => 'teams',
+            'stadiums' => 'stadiums',
+            'matches' => 'matches',
+            'players' => 'players',
+            'standings' => 'standings',
+        ];
+    }
+
+    private function findApiSyncAction(string $key): ?array
+    {
+        foreach ($this->api_sync_actions as $action) {
+            if (($action['key'] ?? null) === $key) {
+                return $action;
+            }
+        }
+
+        return null;
+    }
+
+    private function authorizeSync(): void
+    {
+        $user = auth()->user();
+
+        if (! $user || (! $user->isAdmin() && ! $user->isSuperAdmin())) {
+            abort(403);
+        }
     }
 
     private function getThemeModeFromSettings(): string

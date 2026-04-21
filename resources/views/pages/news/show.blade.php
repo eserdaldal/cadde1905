@@ -7,29 +7,8 @@
     \Carbon\Carbon::setLocale('tr');
     $newsPlaceholder = asset('images/placeholders/news-placeholder.webp');
 
-    $imageUrl = function ($newsItem) use ($newsPlaceholder) {
-        if (!$newsItem) return $newsPlaceholder;
 
-        // CANONICAL-FIRST
-        if (method_exists($newsItem, 'coverImageUrl')) {
-            $url = $newsItem->coverImageUrl();
-            if (! empty($url)) return $url;
-        }
-
-        if (method_exists($newsItem, 'coverMedia')) {
-            $media = $newsItem->coverMedia()
-                ->orderByDesc('mediaables.is_primary')
-                ->orderBy('mediaables.sort_order')
-                ->orderByDesc('mediaables.id')
-                ->first();
-            if ($media && ! empty($media->url)) return $media->url;
-            if ($media && $media->path) return asset('storage/' . ltrim($media->path, '/'));
-        }
-
-        return $newsPlaceholder;
-    };
-
-    $mainImage = $imageUrl($item);
+    $mainImage = $item->coverImageUrl();
     $categoryName = $item->category->name ?? 'Genel';
     
     // READING TIME
@@ -144,7 +123,14 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     @foreach($relatedNews as $related)
                     <a href="{{ route('news.show', $related->slug) }}" class="group block ui-card">
-                        <div class="aspect-video rounded-xl overflow-hidden mb-4"><img src="{{ $imageUrl($related) }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500"></div>
+                        <div class="aspect-video rounded-xl overflow-hidden mb-4">
+                            <img 
+                                src="{{ $related->coverThumbUrl() }}" 
+                                srcset="{{ $related->coverSrcset() }}"
+                                sizes="(min-width: 1200px) 380px, (min-width: 768px) 33vw, 100vw"
+                                class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                            >
+                        </div>
                         <h4 class="ui-card-title text-lg font-bold group-hover:text-red-500 transition">{{ $related->title }}</h4>
                     </a>
                     @endforeach

@@ -67,9 +67,6 @@
                             >
                                 Puan Durumu
                             </a>
-                            <span class="rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-not-allowed">
-                                Fikstür (yakında)
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -94,25 +91,7 @@
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-[#2A2A2A] overflow-hidden">
-                    <button
-                        type="button"
-                        class="mobile-accordion-toggle w-full flex items-center justify-between px-3 py-3 text-left text-sm font-semibold text-white bg-transparent hover:bg-[#1F1F1F] transition-colors"
-                        data-target="mobile-sub-branches"
-                        aria-expanded="false"
-                    >
-                        <span>Branşlar</span>
-                        <span class="mobile-accordion-icon text-base leading-none">⌄</span>
-                    </button>
-
-                    <div id="mobile-sub-branches" class="hidden border-t border-[#2A2A2A] bg-[#121212]">
-                        <div class="flex flex-col p-2">
-                            <span class="rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-not-allowed">Futbol (yakında)</span>
-                            <span class="rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-not-allowed">Basketbol (yakında)</span>
-                            <span class="rounded-lg px-3 py-2.5 text-sm text-gray-500 cursor-not-allowed">Voleybol (yakında)</span>
-                        </div>
-                    </div>
-                </div>
+                
 
                 <div class="rounded-2xl border border-[#2A2A2A] overflow-hidden">
                     <button

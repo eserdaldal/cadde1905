@@ -5,7 +5,6 @@ namespace App\Services\Homepage;
 use App\Models\HistoryEvent;
 use App\Support\ContentKey;
 use App\Services\Homepage\ExclusionBag;
-use App\Services\SiteModeService;
 
 final class HistoryBlockResolver
 {
@@ -18,10 +17,6 @@ final class HistoryBlockResolver
             ->where('is_published', true)
             ->orderByDesc('importance_score')
             ->orderByDesc('published_at');
-
-        if (SiteModeService::isLive()) {
-            $baseQuery->where('is_demo', false);
-        }
 
         // Tier 1: With Primary Cover
         $tier1 = (clone $baseQuery)
@@ -39,7 +34,7 @@ final class HistoryBlockResolver
         foreach ($tier1 as $event) {
             /** @var HistoryEvent $event */
             if (count($items) >= $limit) break;
-            
+
             $contentKey = ContentKey::make('history_event', (int) $event->id);
             if ($bag->has($contentKey)) continue;
 

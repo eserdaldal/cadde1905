@@ -1,0 +1,30 @@
+.page.is-sidebarless:not(.is-worldcup) {
+    max-width: 1480px;
+    padding-left: 32px;
+    padding-right: 32px;
+}
+
+.page.is-sidebarless:not(.is-worldcup) .content-area {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.main-grid.is-sidebarless {
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+
+@media (max-width: 1200px) {
+    .page.is-sidebarless:not(.is-worldcup) {
+        max-width: 1200px;
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .page.is-sidebarless:not(.is-worldcup) {
+        max-width: 100%;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}

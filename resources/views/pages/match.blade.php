@@ -2,6 +2,21 @@
 
 @section('content')
 <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 match-center-page mc-wrap">
+    @php
+        $statusMap = [
+            'Not Started' => 'Başlamadı',
+            'Match Finished' => 'Maç Bitti',
+            'Halftime' => 'Devre Arası',
+            'First Half' => 'İlk Yarı',
+            'Second Half' => 'İkinci Yarı',
+            'Extra Time' => 'Uzatmalar',
+            'Penalty Shootout' => 'Penaltılar',
+            'Match Postponed' => 'Ertelendi',
+            'Match Cancelled' => 'İptal Edildi',
+            'Match Abandoned' => 'Yarıda Kaldı',
+            'Technical loss' => 'Hükmen Mağlup'
+        ];
+    @endphp
     <div class="mc-stack">
 
         {{-- Sayfa Başlığı Kartı --}}
@@ -70,7 +85,8 @@
                             @if(!empty($match['is_live']))
                                 <span class="mc-status-pill mc-status-live">Canlı</span>
                             @else
-                                <span class="mc-status-pill mc-status-upcoming">{{ $match['status_long'] ?? 'Planlandı' }}</span>
+                                @php $mappedStatus = $statusMap[$match['status_long'] ?? ''] ?? $match['status_long'] ?? 'Planlandı'; @endphp
+                                <span class="mc-status-pill mc-status-upcoming">{{ mb_strtoupper($mappedStatus, 'UTF-8') }}</span>
                             @endif
                         </div>
 
@@ -106,6 +122,14 @@
                             {{ $match['venue_name'] ?? '-' }}@if(!empty($match['venue_city'])) <span class="mc-detail-muted">, {{ $match['venue_city'] }}</span>@endif
                         </div>
                     </div>
+                    @if(!empty($match['fixture_id']))
+                    <div>
+                        <div class="mc-detail-label">Sayfa</div>
+                        <div class="mc-detail-value">
+                            <a href="{{ route('match.detail', ['fixture_id' => $match['fixture_id']]) }}" class="mc-detail-link">Maç Detayı</a>
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
             </section>
@@ -124,24 +148,23 @@
                     @if(!empty($upcoming) && is_array($upcoming))
                         @foreach($upcoming as $item)
                             <article class="mc-upcoming-item">
-                                <div class="mc-upcoming-row">
-                                    <div class="mc-flex-fill">
+                                <a href="{{ route('match.detail', ['fixture_id' => $item['fixture_id']]) }}" class="mc-row-link" aria-label="{{ ($item['home_name'] ?? '-') . ' vs ' . ($item['away_name'] ?? '-') }} maç detayı">
+                                <div class="mc-upcoming-row-custom">
+                                    <div class="mc-upcoming-top-bar">
                                         <div class="mc-upcoming-league">
                                             {{ $item['league_name'] ?? '-' }}
                                         </div>
-                                        <div class="mc-match-line">
-                                            {{ $item['home_name'] ?? '-' }}
-                                            <span class="mc-vs-muted"> vs </span>
-                                            {{ $item['away_name'] ?? '-' }}
+                                        <div class="mc-upcoming-time">
+                                            {{ $item['match_datetime'] ?? '-' }}
                                         </div>
-                                        @if(!empty($item['venue_name']))
-                                            <div class="mc-upcoming-venue">{{ $item['venue_name'] }}</div>
-                                        @endif
                                     </div>
-                                    <div class="mc-upcoming-time">
-                                        {{ $item['match_datetime'] ?? '-' }}
+                                    <div class="mc-match-line">
+                                        <span class="mc-inline-match-link">{{ $item['home_name'] ?? '-' }}</span>
+                                        <span class="mc-vs-muted"> vs </span>
+                                        {{ $item['away_name'] ?? '-' }}
                                     </div>
                                 </div>
+                                </a>
                             </article>
                         @endforeach
                     @else
@@ -160,13 +183,14 @@
                     @if(!empty($last_matches) && is_array($last_matches))
                         @foreach($last_matches as $item)
                             <article class="mc-last-item">
+                                <a href="{{ route('match.detail', ['fixture_id' => $item['fixture_id']]) }}" class="mc-row-link" aria-label="{{ ($item['home_name'] ?? '-') . ' vs ' . ($item['away_name'] ?? '-') }} maç detayı">
                                 <div class="mc-last-row">
                                     <div class="mc-flex-fill">
                                         <div class="mc-last-meta">
                                             {{ $item['match_datetime'] ?? '-' }}@if(!empty($item['league_name'])) <span class="mc-meta-sep">•</span>{{ $item['league_name'] }}@endif
                                         </div>
                                         <div class="mc-match-line">
-                                            {{ $item['home_name'] ?? '-' }}
+                                            <span class="mc-inline-match-link">{{ $item['home_name'] ?? '-' }}</span>
                                             <span class="mc-vs-muted"> vs </span>
                                             {{ $item['away_name'] ?? '-' }}
                                         </div>
@@ -182,8 +206,10 @@
                                         @else
                                             <span class="mc-result-pill mc-result-neutral">-</span>
                                         @endif
+                                        
                                     </div>
                                 </div>
+                                </a>
                             </article>
                         @endforeach
                     @else

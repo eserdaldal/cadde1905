@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 class NewsResource extends Resource
 {
     protected static ?string $model = News::class;
+    public const DUPLICATE_LOOKBACK_DAYS = 7;
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
     protected static ?string $navigationGroup = 'İçerik';
     protected static ?string $navigationLabel = 'Haberler';
@@ -48,7 +49,91 @@ class NewsResource extends Resource
                                             ->label('Bağlantı (Slug)')
                                             ->required()
                                             ->maxLength(220)
+                                            ->live(onBlur: true)
                                             ->unique(ignoreRecord: true),
+
+                                        Forms\Components\Placeholder::make('duplicate_check')
+                                            ->label('')
+                                            ->hidden(function (\Filament\Forms\Get $get, ?News $record) {
+                                                $title = (string) $get('title');
+                                                // Min 8 karakter kontrolü
+                                                if (mb_strlen($title) < 8) return true;
+                                                return false;
+                                            })
+                                            ->content(function (\Filament\Forms\Get $get, ?News $record) {
+                                                $title = (string) $get('title');
+                                                $slug = (string) $get('slug');
+                                                
+                                                if (mb_strlen($title) < 8) return null;
+                                                
+                                                // DB Sorgusu (Yapılandırılabilir Lookback Period veya exact slug catch)
+                                                // Performansı korumak için LIKE kullanılmaz.
+                                                $records = News::query()
+                                                    ->select('id', 'title', 'slug', 'status', 'published_at', 'created_at')
+                                                    ->when($record, fn ($q) => $q->where('id', '!=', $record->id))
+                                                    ->where(function($q) use ($slug) {
+                                                        $q->where('created_at', '>=', now()->subDays(self::DUPLICATE_LOOKBACK_DAYS))
+                                                          ->orWhere('slug', $slug);
+                                                    })
+                                                    ->latest()
+                                                    ->take(50)
+                                                    ->get();
+                                                    
+                                                $searchTokens = \App\Support\Text\TitleNormalizer::getTokens($title);
+                                                $searchTokenCount = count($searchTokens);
+                                                $searchNormalizedTitle = \App\Support\Text\TitleNormalizer::normalize($title);
+                                                
+                                                $similar = [];
+                                                $hasExactDuplicate = false;
+                                                
+                                                foreach ($records as $item) {
+                                                    $itemNormalizedTitle = \App\Support\Text\TitleNormalizer::normalize($item->title);
+                                                    
+                                                    // 1) Slug eşleşmesi VEYA tamamen aynı normalize edilmiş başlık
+                                                    $isExactSlug = ($slug !== '' && $item->slug === $slug);
+                                                    $isExactTitle = ($searchNormalizedTitle !== '' && $itemNormalizedTitle === $searchNormalizedTitle);
+                                                    
+                                                    if ($isExactSlug || $isExactTitle) {
+                                                        $item->similarity_score = 1.0;
+                                                        $item->is_exact = true;
+                                                        $similar[] = $item;
+                                                        $hasExactDuplicate = true;
+                                                        continue;
+                                                    }
+                                                    
+                                                    if ($searchTokenCount === 0) continue;
+                                                    
+                                                    // 2) Token benzerliği
+                                                    $itemTokens = \App\Support\Text\TitleNormalizer::getTokens($item->title);
+                                                    $intersection = array_intersect($searchTokens, $itemTokens);
+                                                    $commonCount = count($intersection);
+                                                    
+                                                    $score = $commonCount / max(1, $searchTokenCount);
+                                                    
+                                                    // Minimum 2 kelime eşleşmesi veya oran >= 0.4
+                                                    if ($commonCount >= 2 && $score >= 0.4) {
+                                                        $item->similarity_score = $score;
+                                                        $item->is_exact = false;
+                                                        $similar[] = $item;
+                                                    }
+                                                }
+                                                
+                                                // Sort by similarity_score DESC
+                                                usort($similar, function($a, $b) {
+                                                    return $b->similarity_score <=> $a->similarity_score;
+                                                });
+                                                
+                                                if (count($similar) === 0) {
+                                                    return null; // Arayüzde hiçbir şey gösterme
+                                                }
+                                                
+                                                return view('filament.forms.components.duplicate-news-alert', [
+                                                    'similar' => $similar,
+                                                    'hasExactDuplicate' => $hasExactDuplicate,
+                                                    'searchTokens' => $searchTokens,
+                                                ]);
+                                            })
+                                            ->columnSpanFull(),
 
                                         Forms\Components\Textarea::make('summary')
                                             ->label('Özet Cümle')
@@ -238,6 +323,11 @@ class NewsResource extends Resource
                                             ->offIcon('heroicon-m-photo')
                                             ->onIcon('heroicon-m-trash')
                                             ->onColor('danger'),
+
+                                        Forms\Components\Toggle::make('watermark_enabled')
+                                            ->label('Watermark Uygula')
+                                            ->helperText('Kapak görselinin sağ alt köşesine kulüp logosunu ekler.')
+                                            ->default(false),
                                     ]),
 
                                 Forms\Components\Section::make('İşlemler')
