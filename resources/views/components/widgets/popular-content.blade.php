@@ -15,7 +15,7 @@
         $imageUrl = null;
 
         if (is_string($imagePath) && $imagePath !== '') {
-          $imageUrl = str_starts_with($imagePath, 'http')
+          $imageUrl = (str_starts_with($imagePath, 'http') || str_starts_with($imagePath, '/'))
             ? $imagePath
             : asset('storage/' . ltrim($imagePath, '/'));
         }

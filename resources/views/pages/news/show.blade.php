@@ -19,9 +19,15 @@
     $galleryMedia = collect();
     $allGalleryImages = [];
     if (method_exists($item, 'galleryMedia')) {
-        $allMedia = $item->galleryMedia()->orderBy('mediaables.sort_order')->get();
-        $galleryMedia = $allMedia->reject(fn($m) => asset('storage/'.ltrim($m->path,'/')) === $mainImage);
-        foreach($galleryMedia as $media) $allGalleryImages[] = asset('storage/'.ltrim($media->path,'/'));
+        $allMedia = $item->galleryMedia()
+            ->orderBy('mediaables.sort_order')
+            ->get()
+            ->filter(function($m) {
+                return preg_match('/\.(jpe?g|png|webp|gif|svg)$/i', $m->path ?? '');
+            })
+            ->values();
+        $galleryMedia = $allMedia->reject(fn($m) => ('/storage/' . ltrim($m->path,'/')) === $mainImage);
+        foreach($galleryMedia as $media) $allGalleryImages[] = '/storage/' . ltrim($media->path,'/');
     }
 
     $videoEmbedUrl = function ($newsItem) {
@@ -52,7 +58,7 @@
 @endsection
 
 @section('content')
-<div class="ui-detail-page">
+<div class="ui-detail-page ui-detail-page--news">
     <div id="progress-container">
         <div id="progress-fill"></div>
     </div>
@@ -110,7 +116,7 @@
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
                     @foreach($galleryMedia as $index => $media)
                         <div class="rounded-xl overflow-hidden aspect-video cursor-zoom-in group" onclick="openGSLightbox({{ $index }})">
-                            <img src="{{ asset('storage/' . ltrim($media->path, '/')) }}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                            <img src="{{ '/storage/' . ltrim($media->path, '/') }}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
                         </div>
                     @endforeach
                 </div>

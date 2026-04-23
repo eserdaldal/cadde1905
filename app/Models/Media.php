@@ -88,7 +88,7 @@ class Media extends Model
         $disk = $this->disk ?: 'public';
 
         try {
-            return Storage::disk($disk)->url($this->path);
+            return '/storage/' . ltrim($this->path, '/');
         } catch (\Throwable $e) {
             return null;
         }

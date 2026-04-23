@@ -53,7 +53,7 @@ class SeasonArchive extends Model
             $disk = $primaryMedia->disk ?: 'public';
 
             try {
-                return Storage::disk($disk)->url($primaryMedia->path);
+                return '/storage/' . ltrim($primaryMedia->path, '/');
             } catch (\Throwable $e) {
                 // fallback below
             }

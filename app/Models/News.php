@@ -113,7 +113,7 @@ class News extends Model
     public function coverImageUrl(): string
     {
         $media = $this->primaryCover()->first();
-        $placeholder = asset('images/placeholders/news-placeholder.webp');
+        $placeholder = '/images/placeholders/news-placeholder.webp';
 
         if (! $media || empty($media->path)) {
             return $placeholder;
@@ -133,18 +133,18 @@ class News extends Model
 
             // Check physical presence for safety (first fallback tier)
             if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($wmPath)) {
-                return \Illuminate\Support\Facades\Storage::disk($disk)->url($wmPath);
+                return '/storage/' . ltrim($wmPath, '/');
             }
             
             // If wm path doesn't match extension, try .webp as fallback (WatermarkGenerator might force it)
             $wmWebpPath = $dir . '/derived/' . $uuid . '__wm.webp';
             if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($wmWebpPath)) {
-                return \Illuminate\Support\Facades\Storage::disk($disk)->url($wmWebpPath);
+                return '/storage/' . ltrim($wmWebpPath, '/');
             }
         }
 
         // Tier 2: Original
-        return \Illuminate\Support\Facades\Storage::disk($disk)->url($path);
+        return '/storage/' . ltrim($path, '/');
     }
 
     /**
@@ -168,13 +168,13 @@ class News extends Model
         // Tier 1: WebP Thumbnail Preference
         $thumbWebpPath = $dir . '/derived/' . $uuid . '__thumb.webp';
         if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($thumbWebpPath)) {
-            return \Illuminate\Support\Facades\Storage::disk($disk)->url($thumbWebpPath);
+            return '/storage/' . ltrim($thumbWebpPath, '/');
         }
 
         // Tier 2: Original Extension Thumbnail
         $thumbPath = $dir . '/derived/' . $uuid . '__thumb.' . $media->extension;
         if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($thumbPath)) {
-            return \Illuminate\Support\Facades\Storage::disk($disk)->url($thumbPath);
+            return '/storage/' . ltrim($thumbPath, '/');
         }
 
         // Tier 3: Full Cover (Watermarked or Original)
