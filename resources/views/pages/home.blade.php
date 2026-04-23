@@ -10,7 +10,7 @@
         <div class="hero-section ui-hero">
             @if ($page->hero->imageUrl)
                 <img
-                    src="{{ Str::startsWith($page->hero->imageUrl, ['http://', 'https://']) ? $page->hero->imageUrl : asset('storage/' . $page->hero->imageUrl) }}"
+                    src="{{ Str::startsWith($page->hero->imageUrl, ['http://', 'https://', '/']) ? $page->hero->imageUrl : asset('storage/' . ltrim($page->hero->imageUrl, '/')) }}"
                     alt="{{ $page->hero->title }}"
                     loading="eager"
                 >
@@ -55,7 +55,7 @@
                         <div class="gundem-card ui-card">
                             <div class="img-wrap">
                                 <img
-                                    src="{{ Str::startsWith($item->imageUrl, ['http://', 'https://']) ? $item->imageUrl : asset('storage/' . $item->imageUrl) }}"
+                                    src="{{ Str::startsWith($item->imageUrl, ['http://', 'https://', '/']) ? $item->imageUrl : asset('storage/' . ltrim($item->imageUrl, '/')) }}"
                                     alt="{{ $item->title }}"
                                 >
                             </div>
@@ -102,7 +102,7 @@
                     <div class="block-card ui-card {{ empty($item->imageUrl) ? 'block-card--text' : '' }}">
                         @if ($item->imageUrl)
                             <img
-                                src="{{ Str::startsWith($item->imageUrl, ['http://', 'https://']) ? $item->imageUrl : asset('storage/' . $item->imageUrl) }}"
+                                src="{{ Str::startsWith($item->imageUrl, ['http://', 'https://', '/']) ? $item->imageUrl : asset('storage/' . ltrim($item->imageUrl, '/')) }}"
                                 alt="{{ $item->title }}"
                             >
                         @endif
