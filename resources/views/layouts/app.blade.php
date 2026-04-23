@@ -87,6 +87,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/layout-overrides.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-only.css') }}?v={{ filemtime(public_path('css/mobile-only.css')) }}" media="screen and (max-width: 1024px)">
     @stack('styles')
 </head>
 

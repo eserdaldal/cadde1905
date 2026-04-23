@@ -5,6 +5,7 @@ namespace App\Http\Controllers\WorldCup;
 use App\Http\Controllers\Controller;
 use App\Models\WorldCup\WorldCupMatch;
 use App\Services\WorldCup\WorldCupMatchService;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -15,9 +16,9 @@ class WorldCupMatchController extends Controller
     {
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $data = $this->matchService->getIndexData();
+        $data = $this->matchService->getIndexData($request);
 
         return view('worldcup.matches.index', $data);
     }

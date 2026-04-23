@@ -25,7 +25,7 @@
 @endsection
 
 @section('content')
-<div class="ui-detail-page">
+<div class="ui-detail-page ui-detail-page--history-event">
     <div id="ui-detail-progress">
         <div id="ui-detail-progress-fill"></div>
     </div>

@@ -4,12 +4,15 @@ namespace App\Services\WorldCup;
 
 use App\Models\WorldCup\WorldCup;
 use App\Models\WorldCup\WorldCupMatch;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class WorldCupMatchService
 {
-    public function getIndexData(): array
+    public function getIndexData(Request $request): array
     {
         $activeTournament = WorldCup::query()
             ->where('is_active', true)
@@ -17,36 +20,48 @@ class WorldCupMatchService
             ->first();
 
         $tournamentId = $activeTournament?->id;
+        $perPage = $this->resolvePerPage($request);
 
-        $matches = collect();
+        $matches = [];
         $featuredMatches = collect();
+        $matchesPaginator = $this->emptyPaginator($request, $perPage);
+        $hasMatchesDataset = false;
+        $roundFilterSource = collect();
 
         if ($tournamentId) {
-            $matches = WorldCupMatch::query()
-                ->with(['homeTeam', 'awayTeam', 'stadium'])
-                ->where('tournament_id', $tournamentId)
-                ->where('is_visible', true)
-                ->orderBy('kickoff_at')
-                ->limit(50)
-                ->get();
+            $baseQuery = $this->buildVisibleMatchesBaseQuery($tournamentId);
+            $roundFilterSource = (clone $baseQuery)->select(['round_name', 'stage'])->get();
 
-            $featuredMatches = WorldCupMatch::query()
+            $matchesPaginator = (clone $baseQuery)
+                ->paginate($perPage)
+                ->withQueryString();
+
+            $matchesPaginator = $this->mapMatchPaginator($matchesPaginator);
+            $hasMatchesDataset = $matchesPaginator->total() > 0;
+            $matches = $matchesPaginator->getCollection()->values()->all();
+
+            if (! $hasMatchesDataset) {
+                $featuredMatches = WorldCupMatch::query()
                 ->with(['homeTeam', 'awayTeam', 'stadium'])
                 ->where('tournament_id', $tournamentId)
                 ->where('is_visible', true)
                 ->where('is_featured', true)
                 ->orderBy('kickoff_at')
+                ->orderBy('id')
                 ->limit(6)
                 ->get();
+            }
         }
 
         $filters = [
-            'rounds' => $this->buildRoundFilters($matches),
+            'rounds' => $this->buildRoundFilters($roundFilterSource),
         ];
 
         return [
             'activeTournament' => $activeTournament,
-            'matches' => $this->mapMatches($matches),
+            'matches' => $matches,
+            'matchesPaginator' => $matchesPaginator,
+            'hasMatchesDataset' => $hasMatchesDataset,
             'featuredMatches' => $this->mapMatches($featuredMatches),
             'filters' => $filters,
         ];
@@ -101,6 +116,73 @@ class WorldCupMatchService
         array_unshift($items, 'Tümü');
 
         return $items;
+    }
+
+    private function buildVisibleMatchesBaseQuery(int $tournamentId): Builder
+    {
+        return WorldCupMatch::query()
+            ->with(['homeTeam', 'awayTeam', 'stadium'])
+            ->where('tournament_id', $tournamentId)
+            ->where('is_visible', true)
+            ->orderBy('kickoff_at')
+            ->orderBy('id');
+    }
+
+    private function resolvePerPage(Request $request): int
+    {
+        $requested = (int) $request->query('per_page', 0);
+
+        if ($requested > 0) {
+            return max(5, min($requested, 60));
+        }
+
+        return $this->isMobileRequest($request) ? 10 : 24;
+    }
+
+    private function isMobileRequest(Request $request): bool
+    {
+        $userAgent = Str::lower((string) $request->userAgent());
+
+        if ($userAgent === '') {
+            return false;
+        }
+
+        if (Str::contains($userAgent, ['ipad', 'tablet'])) {
+            return false;
+        }
+
+        return Str::contains($userAgent, ['iphone', 'android', 'mobile', 'windows phone', 'opera mini', 'blackberry', 'ipod', 'webos']);
+    }
+
+    private function emptyPaginator(Request $request, int $perPage): LengthAwarePaginator
+    {
+        $paginator = new LengthAwarePaginator(
+            items: [],
+            total: 0,
+            perPage: $perPage,
+            currentPage: 1,
+            options: [
+                'path' => LengthAwarePaginator::resolveCurrentPath(),
+                'pageName' => 'page',
+            ]
+        );
+
+        $query = $request->query();
+        unset($query['page']);
+
+        if (! empty($query)) {
+            $paginator->appends($query);
+        }
+
+        return $paginator;
+    }
+
+    private function mapMatchPaginator(LengthAwarePaginator $paginator): LengthAwarePaginator
+    {
+        $mappedItems = collect($this->mapMatches($paginator->getCollection()));
+        $paginator->setCollection($mappedItems);
+
+        return $paginator;
     }
 
     private function mapMatches(Collection $matches): array

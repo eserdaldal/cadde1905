@@ -55,19 +55,8 @@
             ->all();
 
         $matches = $matches ?? [];
-        if ($matches instanceof \Illuminate\Support\Collection) {
-            $matches = $matches->all();
-        }
-
-        $matchesPaginator = $matchesPaginator ?? null;
-        $hasMatchesDataset = $hasMatchesDataset ?? (is_countable($matches) && count($matches) > 0);
-
         $featuredMatches = $featuredMatches ?? [];
-        if ($featuredMatches instanceof \Illuminate\Support\Collection) {
-            $featuredMatches = $featuredMatches->all();
-        }
-
-        $matchesForGrid = $hasMatchesDataset ? $matches : $featuredMatches;
+        $matchesForGrid = count($matches) > 0 ? $matches : $featuredMatches;
 
         $groupedMatches = collect($matchesForGrid)->groupBy(function ($match) {
             return $match->date_key ?? 'upcoming';
@@ -116,7 +105,7 @@
         }
     @endphp
 
-    <div class="wc-container" x-data='{ mobileLimit: 10, 
+    <div class="wc-container" x-data='{
         activeRound: "Tümü",
         activeDate: "",
         visibleCount: 0,
@@ -162,7 +151,6 @@
                             {{ $round }}
                         </button>
                     @endforeach
-
                 </div>
 
                 <div class="flex items-center gap-4 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
@@ -187,24 +175,21 @@
                                 <span class="wc-date-chip__day">{{ $date->display_day ?? '—' }}</span>
                             </button>
                         @endforeach
-
                     @endif
+@if(method_exists($matches, "links"))
+<div class="mt-10 flex justify-center">
+{{ $matches->links() }}
+</div>
+@endif
                 </div>
             </div>
 
             @if ($groupedMatches->isEmpty())
                 <div class="py-20">
-                    @if ($hasMatchesDataset)
-                        @include('worldcup.partials.wc-empty-state', [
-                            'title' => 'Bu sayfada maç bulunamadı',
-                            'description' => 'Önceki sayfalara dönebilir veya filtreleri sıfırlayarak yeniden deneyebilirsiniz.'
-                        ])
-                    @else
-                        @include('worldcup.partials.wc-empty-state', [
-                            'title' => 'Maç takvimi henüz açıklanmadı',
-                            'description' => 'Turnuva fikstürü kesinleştiğinde tüm detaylar burada yer alacaktır.'
-                        ])
-                    @endif
+                    @include('worldcup.partials.wc-empty-state', [
+                        'title' => 'Maç takvimi henüz açıklanmadı',
+                        'description' => 'Turnuva fikstürü kesinleştiğinde tüm detaylar burada yer alacaktır.'
+                    ])
                 </div>
             @else
                 @foreach ($groupedMatches as $dateKey => $items)
@@ -255,11 +240,9 @@
                                     @include('worldcup.partials.match-card', ['match' => $match])
                                 </div>
                             @endforeach
-
                         </div>
                     </div>
                 @endforeach
-
 
                 <div x-show="visibleCount === 0" class="mt-12">
                     @include('worldcup.partials.wc-empty-state', [
@@ -268,8 +251,11 @@
                     ])
                 </div>
             @endif
-
-            @include('worldcup.partials.matches-pagination', ['paginator' => $matchesPaginator])
+@if(method_exists($matches, "links"))
+<div class="mt-10 flex justify-center">
+{{ $matches->links() }}
+</div>
+@endif
 
         </section>
     </div>
