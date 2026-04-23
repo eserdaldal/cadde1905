@@ -1,5 +1,5 @@
 <header class="w-full psl-header sticky top-0 z-40 shadow-sm dark:shadow-none transition-colors duration-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 grid items-center psl-header-grid">
+    <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-16 grid items-center psl-header-grid">
 
         {{-- Logo (sol — sabit genişlik denge sağlar) --}}
         <div class="flex items-center psl-header-logo">
@@ -16,7 +16,7 @@
         <div class="flex lg:hidden"></div>
 
         {{-- Sağ Alan — sabit genişlik, nav kaymayı önler --}}
-        <div class="flex items-center justify-end gap-x-1 w-[240px]">
+        <div class="flex items-center justify-end gap-x-1 w-auto lg:w-[240px]">
 
             {{-- Mobil Menü Butonu --}}
             <button id="sidebar-open" type="button"
@@ -67,3 +67,77 @@
 
     </div>
 </header>
+{{-- MOBILE SEARCH UX FIX START --}}
+<script>
+(function () {
+    function initMobileSearchUx() {
+        var header = document.querySelector('.psl-header');
+        if (!header) return;
+
+        var box = document.getElementById('search-box');
+        var input = document.getElementById('search-input');
+        var toggle = header.querySelector('button[aria-label="Ara"]');
+        var menuButton = header.querySelector('button.sidebar-open');
+
+        if (!box || !toggle) return;
+
+        function isOpen() {
+            return window.getComputedStyle(box).display !== 'none';
+        }
+
+        function setOpen(open) {
+            box.style.display = open ? 'flex' : 'none';
+            header.classList.toggle('search-open', open);
+
+            if (open) {
+                setTimeout(function () {
+                    input && input.focus();
+                }, 50);
+            } else {
+                input && input.blur();
+            }
+        }
+
+        toggle.removeAttribute('onclick');
+
+        toggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            setOpen(!isOpen());
+        });
+
+        box.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+
+        if (menuButton) {
+            menuButton.addEventListener('click', function () {
+                setOpen(false);
+            });
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!isOpen()) return;
+            if (box.contains(e.target) || toggle.contains(e.target) || (menuButton && menuButton.contains(e.target))) {
+                return;
+            }
+            setOpen(false);
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && isOpen()) {
+                setOpen(false);
+            }
+        });
+
+        setOpen(false);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileSearchUx, { once: true });
+    } else {
+        initMobileSearchUx();
+    }
+})();
+</script>
+{{-- MOBILE SEARCH UX FIX END --}}
